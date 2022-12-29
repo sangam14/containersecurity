@@ -44,12 +44,12 @@ Container vs. Virtualization
     - Using native tools
     - Using third-party tools
 4. Identifying the components and their security state
-    - Get an inventory of containers
-          - Environment variables
-          - Docker volumes
-          - Networking
-          - Ports used/Port forwarding
-     - Capabilities and namespaces in Docker
+    1. Get an inventory of containers
+      - Environment variables
+      - Docker volumes
+      - Networking
+      - Ports used/Port forwarding
+     2. Capabilities and namespaces in Docker
 5. Hands-on Exercises:
     - Scanning the remote host for unauthenticated Docker API access
     - Identify a container and extract sensitive information
