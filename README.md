@@ -3,11 +3,11 @@
 1. [What is a container?](./Intro-Containers/what-is-container.md)
 2. Basics of a container and its challenges
      - [Container vs. Virtualization](/Intro-Containers/containervsVM.md)
-     - Container Advantages
-     - Container Disadvantages
+     - [Container Advantages](./Intro-Containers/Container-adv-dis.md#container-advantages)
+     - [Container Disadvantages](./Intro-Containers/Container-adv-dis.md#container-disadvantages)
 3. Container fundamentals
-    - Namespaces
-    - Cgroup
+    - [Namespaces](./Intro-Containers/Namespaces.md)
+    - [Cgroup](./Intro-Containers/Cgroup.md)
     - Capabilities
 4. Docker architecture and its components
     - Docker CLI
