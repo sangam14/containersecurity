@@ -8,11 +8,11 @@
 3. Container fundamentals
     - [Namespaces](./Intro-Containers/Namespaces.md)
     - [Cgroup](./Intro-Containers/Cgroup.md)
-    - Capabilities
-4. Docker architecture and its components
-    - Docker CLI
-    - Docker Engine (Daemon, API)
-    - Docker Runtime (containerd, shim, runc)
+    - [Capabilities](./Intro-Containers/Capabilities.md)
+4. [Docker architecture and its components](./Intro-Containers/docker-architecture.md#docker-architecture)
+    - [Docker CLI](./Intro-Containers/docker-architecture.md#docker-client)
+    - [Docker Engine (Daemon, API)](./Intro-Containers/docker-architecture.md#docker-engine)
+    - [Docker Runtime (containerd, shim, runc)](./Intro-Containers/docker-architecture.md#docker-runtime)
 5. Interacting with container ecosystem
      - Docker images and image layers <br>
      - Build Container images using Dockerfile<br>
