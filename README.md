@@ -99,7 +99,6 @@
    - Build a distro less image to reduce the footprint
    - Docker Content Trust with Notary
    - Securing the container by default using Harbor
-   - Scanning Docker for vulnerabilities with Trivy
    - Scanning Docker for vulnerabilities with ThraetMapper
    
 ## Security Monitoring of Containers
@@ -113,6 +112,4 @@
 7. Hands-on Exercises:
    - Anchore Engine – Policy creation and enforcement
    - VMWare Harbor – Securing Docker image with Harbor
-   - Sysdig Falco – Runtime protection and monitoring
-   - Tracee – Runtime security   
 
