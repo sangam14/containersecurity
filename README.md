@@ -13,13 +13,12 @@
     - [Docker CLI](./Intro-Containers/docker-architecture.md#docker-client)
     - [Docker Engine (Daemon, API)](./Intro-Containers/docker-architecture.md#docker-engine)
     - [Docker Runtime (containerd, shim, runc)](./Intro-Containers/docker-architecture.md#docker-runtime)
-5. Interacting with container ecosystem
-     - Docker images and image layers <br>
-     - Build Container images using Dockerfile<br>
-     - Docker image repository<br>
-     - Running a container<br>
-     - Storing data in a container(mounts, volumes, etc.)<br>
-     - Networking in containers<br>
+5. [Interacting with container ecosystem](./Intro-Containers/Intracting-with-container.md)
+     - [Docker images and image layers](./Intro-Containers/Intracting-with-container.md#understand-image-layers) <br>
+     - [Build Container images using Dockerfile](./Intro-Containers/Intracting-with-container.md#dockerfile-instructions-with-example)<br>
+     - [Storing data in a container(mounts, volumes, etc.)](./Intro-Containers/Intracting-with-container.md#storing-data-in-a-container)<br>
+     - [Networking in containers](./Intro-Containers/Intracting-with-container.md#networking-in-containers)<br>
+     - [Docker Compose](./Intro-Containers/Intracting-with-container.md#docker-compose)
   
 6. Managing / Orchestrating multiple containers
    - Using CLI/API to manage multiple containers
@@ -27,14 +26,7 @@
    - Kubernetes
    - Nomad
 7. Docker alternatives(Podman, rkt)
-8. Hands-on Exercises:
-     - Learn Docker commands
-     - Create Docker Image using Dockerfile
-     - Networking in Docker
-     - Learn how to work with data in a container
-     - How to use container registry
-     - Writing the Dockerfile
-     - Learn Docker Compose
+
      
 ## Container Reconnaissance
 
