@@ -43,10 +43,7 @@
       - Ports used/Port forwarding
      2. Capabilities and namespaces in Docker
 5. Hands-on Exercises:
-    - Scanning the remote host for unauthenticated Docker API access
-    - Identify a container and extract sensitive information
-    - Identify misconfigurations in namespace, capabilities, and networking
-    - Create and restore a snapshot(tar) of the container for further analysis
+   - [Docker Security Benchmark](./container-sec/Auditing-docker-sec.md)
     
 ## Defending Containers and Containerized Apps on Scale
 
