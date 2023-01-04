@@ -247,6 +247,8 @@ Section C - Score
 
 
 
+
+
 # Run the Docker daemon as a non-root user, if possible (Manual) 
 
 The Docker containers by default run with the root privilege and so does the application that runs inside the container. This is another major concern from the security perspective because hackers can gain root access to the Docker host by hacking the application running inside the container.
@@ -351,4 +353,54 @@ Password:
 ]
 
 
+```
+If not required, you should restrict the network traffic between containers.
+
+By default, unrestricted network traffic is enabled amongst all containers on the same host in the default network bridge. However, a bad actor positioned in a compromised container could leverage this functionality to abuse other services exposed by other containers within the container network on the same host.
+
+To disable the inter-container communication, configure the daemon with the icc flag set to false. Note that this configuration can be overridden by containers that are run with the deprecated --link option.
+
+
+```
+$ docker network ls -q | xargs docker network inspect -f '{{ .Name }}: {{ .Options }}'
+```
+The com.docker.network.bridge.enable_icc should be set to false for the default network bridge.
+
+You should also consider using user-defined bridge networks to enforce network isolation among containers as a more flexible solution.
+
+# Protect the UNIX socket from unintended access
+
+
+
+The non-networked /var/run/docker.sock UNIX socket is used by default to locally access the Docker Engine API. The safe default settings on Linux include a socket file owned by the “root” user and a “docker” group allowing solely “root” read and write file permission (ug+rw).
+
+Run this command to review the correctness of the Docker UNIX socket permissions.
+
+```
+$ ls -l /var/run/docker.sock
+lrwxr-xr-x  1 root  daemon  44  4 Jan 17:16 /var/run/docker.sock -> /Users/sangambiradar/.docker/run/docker.sock
+```
+
+# Use secure registries to pull and push images
+
+nsecure registries do not use TLS, nor do they have an invalid TLS certificate. Such registries should not be used as they are prone to man-in-the-middle (MITM) attacks by malicious actors who are able to modify the network traffic.
+
+Run the below command to list the insecure registries used by the Docker daemon.
+
+```
+
+docker info --format '{{.RegistryConfig.InsecureRegistryCIDRs}}'
+
+```
+
+# Enable user namespace support 
+```
+ps aux | grep dockerd
+sangambiradar    34266   0.0  0.0 408626880   1280 s000  S+    7:22PM   0:00.00 grep --color=auto --exclude-dir=.bzr --exclude-dir=CVS --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn --exclude-dir=.idea --exclude-dir=.tox dockerd
+```
+
+```
+sudo dockerd --userns-remap=default &
+[1] 34417
+[1]  + 34417 suspended (tty output)  sudo dockerd --userns-remap=default  
 ```
