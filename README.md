@@ -54,8 +54,8 @@
      - Choosing base images
      - Distroless images
      - Scratch images
-   2. Security Linting of Dockerfiles
-   3. Static Analysis of container images
+   2. [Security Linting of Dockerfiles](./container-app-sec/security-linting-dockerfile.md)
+   3. [Static Analysis of container images
    4. Static Analysis library for container
 2. Docker host security configurations
     - Kernel Hardening using SecComp and AppArmor
