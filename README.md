@@ -31,20 +31,22 @@
 ## Container Reconnaissance
 
 1. Overview of Container Security
-2. Attack surface of the container ecosystem
+2. [Attack surface of the container ecosystem](./container-sec/attack-surface.md)
 3. Analysis of the attack surface
     - Using native tools
     - Using third-party tools
 4. Identifying the components and their security state
     1. Get an inventory of containers
-      - Environment variables
-      - Docker volumes
-      - Networking
+      - [Environment variables](./container-sec/Envir-variables.md)
+      - [Docker volumes](./container-sec/Docker-volumes.md)
+      - [Networking](./container-sec/Docker-Networking.md)
       - Ports used/Port forwarding
      2. Capabilities and namespaces in Docker
 5. Hands-on Exercises:
    - [Docker Security Benchmark](./container-sec/Auditing-docker-sec.md)
-    
+   - [CIS Docker Benchmark - InSpec Profile](https://dev-sec.io/baselines/docker/)
+   - [Lynis](https://github.com/CISOfy/Lynis)
+
 ## Defending Containers and Containerized Apps on Scale
 
 1. Container image security
@@ -78,6 +80,7 @@
    - DevOps CI/CD Integration
 7. Docker Tools, Techniques and Tactics
    1. Tools
+    - [Dockerscan](./container-app-sec/dockerscan.md) 
     - Dive
     - Dockle
   2. Techniques
@@ -102,3 +105,7 @@
    - Anchore Engine – Policy creation and enforcement
    - VMWare Harbor – Securing Docker image with Harbor
 
+## Docker Attack - Use Cases 
+
+1. [Kinising Malware attack](./use-cases/kinsing-Malware-attack.md) 
+2. [Doki Malware Attack](./use-cases/Doki-malware-attack.md) 
