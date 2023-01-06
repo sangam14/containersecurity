@@ -58,8 +58,8 @@
    3. [Static Analysis of container images/library for container](./container-app-sec/packetscanner.md)
    
 2. Docker host security configurations
-    - Kernel Hardening using SecComp and AppArmor
-    - Custom policy creation using SecComp and AppArmor
+    - [Kernel Hardening using SecComp and AppArmor](/container-app-sec/SecComp-AppArmor.md)
+    - [Custom policy creation using SecComp and AppArmor](/container-app-sec/SecComp-AppArmor.md)
 3. Docker Daemon security configurations
    1. Docker user remapping
    2. Docker runtime security (gVisor, Kata)
@@ -71,7 +71,7 @@
 4. Network Security in containers
    - Segregating networks
 5. Misc Docker Security Configurations
-   - Content Trust and Integrity checks
+   - [Content Trust and Integrity checks](/container-app-sec/DCT.md)
 6. Docker Registry security configurations
    - Internal vs. Public Registries
    - Authentication and Authorization (RBAC)
