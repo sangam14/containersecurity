@@ -35,7 +35,9 @@ Scan a docker images , filter for critical vulnerabilities
 
 Scan a docker images with CVEs 
 
-```
+
+
+
 ```
 ./package-scanner -source nginx:latest
 INFO[2023-01-06T15:10:15+05:30] autodetect.go:91 trying to connect to endpoint 'unix:///var/run/docker.sock' with timeout '10s' 
