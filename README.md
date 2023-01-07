@@ -91,11 +91,7 @@
   2. Techniques
   3. Tactics
 8. Hands-on Exercises:
-   - Minimize security misconfigurations in Docker with CIS
-   - Build a secure & most miniature image to minimize the footprint
-   - Build a distro less image to reduce the footprint
-   - Docker Content Trust with Notary
-   - Securing the container by default using Harbor
+
    - Scanning Docker for vulnerabilities with ThraetMapper
    
 ## Security Monitoring of Containers
