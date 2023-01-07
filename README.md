@@ -61,17 +61,17 @@
     - [Kernel Hardening using SecComp and AppArmor](/container-app-sec/SecComp-AppArmor.md)
     - [Custom policy creation using SecComp and AppArmor](/container-app-sec/SecComp-AppArmor.md)
 3. Docker Daemon security configurations
-    1. [Daemon security configuration](./container-app-sec/docker-daemon-sec.md#daemon-security-configuration)
-    2. [configure access to docker daemon through HTTPS and certificate authentication](/container-app-sec/docker-daemon-sec.md#configure-access-to-docker-daemon-through-https-and-certificate-authentication)
-    3. [using namespace isolation technology](./container-app-sec/docker-daemon-sec.md#using-namespace-isolation-technology)
-    4. [setting the partition of docker](/container-app-sec/docker-daemon-sec.md#setting-the-partition-of-docker)
-    5. [limit traffic between default bridge containers](/container-app-sec/docker-daemon-sec.md#limit-traffic-between-default-bridge-containers)
-    6. [configuration log](/container-app-sec/docker-daemon-sec.md#configuration-log)
-    7. [setting ulimit](/container-app-sec/docker-daemon-sec.md#setting-ulimit)
-    8. [setting CGroup](/container-app-sec/docker-daemon-sec.md#setting-cgroup)
-    9. [configuring seccomp](/container-app-sec/docker-daemon-sec.md#configuring-seccomp)
-    10.[disable the experimental function of docker](/container-app-sec/docker-daemon-sec.md#disable-the-experimental-function-of-docker)
-    11.[Daemon configuration example description (Linux)](/container-app-sec/docker-daemon-sec.md#daemon-configuration-example-description-linux)
+    1. [Daemon security configuration](./container-app-sec/docker-daemon-sec.md#daemon-security-configuration)<br>
+    2. [configure access to docker daemon through HTTPS and certificate authentication](/container-app-sec/docker-daemon-sec.md#configure-access-to-docker-daemon-through-https-and-certificate-authentication)<br>
+    3. [using namespace isolation technology](./container-app-sec/docker-daemon-sec.md#using-namespace-isolation-technology)<br>
+    4. [setting the partition of docker](/container-app-sec/docker-daemon-sec.md#setting-the-partition-of-docker)<br>
+    5. [limit traffic between default bridge containers](/container-app-sec/docker-daemon-sec.md#limit-traffic-between-default-bridge-containers)<br>
+    6. [configuration log](/container-app-sec/docker-daemon-sec.md#configuration-log)<br>
+    7. [setting ulimit](/container-app-sec/docker-daemon-sec.md#setting-ulimit)<br>
+    8. [setting CGroup](/container-app-sec/docker-daemon-sec.md#setting-cgroup)<br>
+    9. [configuring seccomp](/container-app-sec/docker-daemon-sec.md#configuring-seccomp)<br>
+    10.[disable the experimental function of docker](/container-app-sec/docker-daemon-sec.md#disable-the-experimental-function-of-docker) <br>
+    11.[Daemon configuration example description (Linux)](/container-app-sec/docker-daemon-sec.md#daemon-configuration-example-description-linux)<br>
 4. Network Security in containers
    - Segregating networks
 5. Misc Docker Security Configurations
