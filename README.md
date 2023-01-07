@@ -69,9 +69,10 @@
     6. [configuration log](/container-app-sec/docker-daemon-sec.md#configuration-log)<br>
     7. [setting ulimit](/container-app-sec/docker-daemon-sec.md#setting-ulimit)<br>
     8. [setting CGroup](/container-app-sec/docker-daemon-sec.md#setting-cgroup)<br>
-    9. [configuring seccomp](/container-app-sec/docker-daemon-sec.md#configuring-seccomp)<br>
-    10.[disable the experimental function of docker](/container-app-sec/docker-daemon-sec.md#disable-the-experimental-function-of-docker) <br>
-    11.[Daemon configuration example description (Linux)](/container-app-sec/docker-daemon-sec.md#daemon-configuration-example-description-linux)<br>
+    9. [configuring seccomp](/container-app-sec/docker-daemon-sec.md#configuring-seccomp) <br>
+    10. [disable the experimental function of docker](/container-app-sec/docker-daemon-sec.md#disable-the-experimental-function-of-docker) <br>
+    11. [Daemon configuration example description (Linux)](/container-app-sec/docker-daemon-sec.md#daemon-configuration-example-description-linux)<br>
+
 4. Network Security in containers
    - Segregating networks
 5. Misc Docker Security Configurations
