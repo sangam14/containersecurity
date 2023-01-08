@@ -1,8 +1,11 @@
+
+Orignally published on [CloudNativeFolks]()
+
 `ThreatMapper`
 
 ThreatMapper hunts for threats in your production platforms, and ranks these threats based on their risk-of-exploit. It uncovers vulnerable software components, exposed secrets and deviations from good security practice. ThreatMapper uses a combination of agent-based inspection and agent-less monitoring to provide the widest possible coverage to detect threats.
 
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=deepfence&repo=Threatmapper align="left")](https://github.com/deepfence/Threatmapper)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=deepfence&repo=Threatmapper)](https://github.com/deepfence/Threatmapper)
 
 ThreatMapper carries on the good 'shift left' security practices that you already employ in your development pipelines. It continues to monitor running applications against emerging software vulnerabilities and monitors the host and cloud configuration against industry-expert benchmarks.
 
@@ -12,7 +15,7 @@ The ThreatMapper Management Console is a container-based application that can be
 
 *   Topology-based learning of your live infrastructure
     
-    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720063844/e189658b-8bdf-4ede-a19f-ce04cf8b089e.png align="center")
+    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720063844/e189658b-8bdf-4ede-a19f-ce04cf8b089e.png)
     
 
 *   Identify Threats and Vulnerabilities and generate SBOM (software bill of material )
@@ -20,7 +23,7 @@ The ThreatMapper Management Console is a container-based application that can be
 
 *   ThreatGraph visualization, you can then identify the issues that present the greatest risk to the security of your applications, and prioritize these for planned protection or remediation.
     
-    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720087970/619f0c7e-d251-4934-b165-6157cb3f3730.png align="center")
+    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720087970/619f0c7e-d251-4934-b165-6157cb3f3730.png )
     
 
 *   Manage the users who can access the console.
@@ -37,7 +40,7 @@ The ThreatMapper Management Console is a container-based application that can be
     
 *   Scan image builds during the CI/CD pipeline, supporting CircleCI, Jenkins, and GitLab.
     
-    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720117091/e979935e-efa6-41b6-8a9d-75c08eb78771.png align="center")
+    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720117091/e979935e-efa6-41b6-8a9d-75c08eb78771.png)
     
 *   Scan containers and host filesystems for unprotected secrets, including access tokens, keys and passwords.
     
@@ -52,26 +55,26 @@ login to AWS account:- console.aws.amazon.com
 
 *   Create Ubuntu Instance on AWS EC2
     
-    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720154113/3f081a20-b6ce-4813-8673-17d3c9abe78e.png align="center")
+    ![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720154113/3f081a20-b6ce-4813-8673-17d3c9abe78e.png)
     
 
 select instance type as per requirements
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720172313/ad01eb1e-b960-42e2-a317-dcefc1df36d5.png align="center")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720172313/ad01eb1e-b960-42e2-a317-dcefc1df36d5.png )
 
 Click on the launch instance
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720215112/24a709fc-590c-4070-9e71-01dc27bb61b4.png align="center")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720215112/24a709fc-590c-4070-9e71-01dc27bb61b4.png )
 
 hurry!
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720236656/29ee7c7d-20b6-4a3d-a16e-4b85e169d8a8.png align="center")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720236656/29ee7c7d-20b6-4a3d-a16e-4b85e169d8a8.png )
 
 access AWS instance using CLI
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720271742/4b073e41-046e-4a25-9fba-bcbc446f397b.png align="center")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720271742/4b073e41-046e-4a25-9fba-bcbc446f397b.png )
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720285296/ac528a2e-54df-4ef9-98b8-2d2d0d292c22.png align="left")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720285296/ac528a2e-54df-4ef9-98b8-2d2d0d292c22.png )
 
 ```rust
 sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
@@ -597,8 +600,8 @@ access threatmapper console using AWS instance public IP
 
 54.152.156.120 (in your case check your EC2 instance public IP )
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720365441/b1c13f69-94ee-4db1-85e7-705c85adbe4a.png align="left")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720365441/b1c13f69-94ee-4db1-85e7-705c85adbe4a.png )
 
-![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720385153/020c94de-a9bb-4d2b-a4c1-8b7101377565.png align="left")
+![](https://cdn.hashnode.com/res/hashnode/image/upload/v1671720385153/020c94de-a9bb-4d2b-a4c1-8b7101377565.png )
 
 next part of this you will find here you can do the same deployment using Kubernetes or Helm
