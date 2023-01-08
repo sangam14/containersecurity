@@ -50,10 +50,10 @@
 ## Defending Containers and Containerized Apps on Scale
 
 1. Container image security
-   1. Building secure container images
-     - Choosing base images
-     - Distroless images
-     - Scratch images
+   1. [Building secure container images](/container-app-sec/Container-image-security.md)
+     - [Choosing base images](/container-app-sec/Container-image-security.md#choosing-base-images)
+     - [Distroless images](/container-app-sec/Container-image-security.md#distroless-images)
+     - [Scratch images]((/container-app-sec/Container-image-security.md#scratch-images))
    2. [Security Linting of Dockerfiles](./container-app-sec/security-linting-dockerfile.md)
    3. [Static Analysis of container images/library for container](./container-app-sec/packetscanner.md)
    
@@ -77,32 +77,25 @@
    - Segregating networks
 5. Misc Docker Security Configurations
    - [Content Trust and Integrity checks](/container-app-sec/DCT.md)
-6. Docker Registry security configurations
-   - Internal vs. Public Registries
-   - Authentication and Authorization (RBAC)
-   - Image scanning
-   - Policy enforcement
-   - DevOps CI/CD Integration
+6. [Docker Registry security configurations](./container-app-sec/docker-registry.md)
 7. Docker Tools, Techniques and Tactics
    1. Tools
     - [Dockerscan](./container-app-sec/dockerscan.md) 
-    - Dive
+    - [Dive]
     - Dockle
-  2. Techniques
-  3. Tactics
+ 
 8. Hands-on Exercises:
 
-   - Scanning Docker for vulnerabilities with ThraetMapper
+   - [Scanning Docker for vulnerabilities with ThraetMapper]
    
 ## Security Monitoring of Containers
 
 1. Monitoring and incident response in containers
-2. Docker events
+2. [Docker events](./container-monitoring.md/docker-events.md)
 3. Docker logs
 4. Docker runtime prevention
-5. Security monitoring using Wazuh
-6. Policy creation, enforcement, and management
-7. Hands-on Exercises:
+5. Hands-on Exercises:
+   - [Weave Scope - Container monitoring and visualization](/container-monitoring.md/Sock-shop-weave.md)
    - Anchore Engine – Policy creation and enforcement
    - VMWare Harbor – Securing Docker image with Harbor
 
