@@ -86,7 +86,7 @@
  
 8. Hands-on Exercises:
 
-   - [Scanning Docker for vulnerabilities with ThraetMapper]
+   - [Scanning Docker for vulnerabilities with ThraetMapper](/container-app-sec/ThreatMapper-app.md)
    
 ## Security Monitoring of Containers
 
