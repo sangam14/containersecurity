@@ -54,6 +54,8 @@
      - [Choosing base images](/container-app-sec/Container-image-security.md#choosing-base-images)
      - [Distroless images](/container-app-sec/Container-image-security.md#distroless-images)
      - [Scratch images]((/container-app-sec/Container-image-security.md#scratch-images))
+     - [SecretScanner - Finding secrets and passwords in container images and file systems]()
+     - [YaraHunter - Malware Scanner for Container Images]()
    2. [Security Linting of Dockerfiles](./container-app-sec/security-linting-dockerfile.md)
    3. [Static Analysis of container images/library for container](./container-app-sec/packetscanner.md)
    
@@ -103,3 +105,4 @@
 
 1. [Kinising Malware attack](./use-cases/kinsing-Malware-attack.md) 
 2. [Doki Malware Attack](./use-cases/Doki-malware-attack.md) 
+
