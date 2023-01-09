@@ -54,8 +54,10 @@
      - [Choosing base images](/container-app-sec/Container-image-security.md#choosing-base-images)
      - [Distroless images](/container-app-sec/Container-image-security.md#distroless-images)
      - [Scratch images]((/container-app-sec/Container-image-security.md#scratch-images))
-     - [SecretScanner - Finding secrets and passwords in container images and file systems]()
-     - [YaraHunter - Malware Scanner for Container Images]()
+     - [DockerFile Security Best Practices](/container-app-sec/dockerfile-security.md)
+     - [SecretScanner - Finding secrets and passwords in container images and file systems](/container-app-sec/SecretScanner.md)
+     - [YaraHunter - Malware Scanner for Container Images](/container-app-sec/Yarahunter.md)
+
    2. [Security Linting of Dockerfiles](./container-app-sec/security-linting-dockerfile.md)
    3. [Static Analysis of container images/library for container](./container-app-sec/packetscanner.md)
    
@@ -83,7 +85,7 @@
 7. Docker Tools, Techniques and Tactics
    1. Tools
     - [Dockerscan](./container-app-sec/dockerscan.md) 
-    - [Dive]
+    - [Dive](/container-app-sec/Dive.md)
     - Dockle
  
 8. Hands-on Exercises:
