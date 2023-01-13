@@ -1,5 +1,5 @@
 ---
-title: "What is container ? "
+title: "What is container?"
 description: "The introduction to this course."
 ---
 
