@@ -1,0 +1,17 @@
+{
+  "author": {
+    "name": "Sangam Birdar",
+    "company": "deepfence.io"
+  },
+  "title": "Container Security",
+  "subtitle": "Ultimate Workhop track",
+  "frontendMastersLink": "https://discord.com/invite/9ERSnT7",
+  "social": {
+    "linkedin": "sanngambiradar",
+    "github": "sangam14",
+    "twitter": "BiradarSangam"
+  },
+  "description": "Learn to be a web developer from nothing from industry veteran Brian Holt",
+  "keywords": ["web dev", "web developer", "css", "javascript", "html", "visual studio code", "learn to code"],
+  "productionBaseUrl": "/containersecurity"
+}

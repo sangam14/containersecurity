@@ -1,0 +1,25 @@
+:root {
+  --primary: lavender;
+  --secondary: #281750;
+  --highlight: #281750;
+
+  --text-header: var(--primary);
+  --text-main-headers: var(--highlight);
+  --text-links: #51178c;
+  --text-footer: #333;
+
+  --bg-main: white;
+  --bg-dots: var(--text-links);
+  --bg-lesson: white;
+
+  --nav-buttons: var(--highlight);
+  --nav-buttons-text: white;
+
+  --corner-active: var(--highlight);
+  --corner-inactive: #f4f4f4;
+  --icons: var(--primary);
+  --footer-icons: var(--highlight);
+
+  --emphasized-bg: #dce8ff;
+  --emphasized-border: #aab6d2;
+}
