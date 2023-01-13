@@ -10,27 +10,27 @@ description: "  "
 
 * Ubuntu /Debian 
 
-```
+```bash
 wget https://github.com/wagoodman/dive/releases/download/v0.9.2/dive_0.9.2_linux_amd64.deb sudo apt install ./dive_0.9.2_linux_amd64.deb
 ```
 
 * RHEL/CemtOS
 
-``` 
+```bash
 curl -OL https://github.com/wagoodman/dive/releases/download/v0.9.2/dive_0.9.2_linux_amd64.rpm rpm -i dive_0.9.2_linux_amd64.rpm
 
 ```
 
 * Arch Linux
 
-```
+```bash
 ay -S dive
 
 ```
 
 Mac OS X
 
-```
+```bash
 brew install dive
 
 ```
@@ -39,29 +39,29 @@ brew install dive
 
 To analyze a Docker image simply run dive with an image tag/id/digest:
 
-```
+```bash
 
 $ dive <your-image-tag>
 ```
 
 or if you want to build your image then jump straight into analyzing it:
 
-```
+```bash
 $ dive build -t <some-tag> 
 ```
 
 example  ngnix image 
 
-![](/img/dive.png)
+![](./images/dive.png)
 
 
 another tool that make this all more easy 
 
 https://github.com/prakhar1989/dive-in
 
-![](/img/1.png)
+![](./images/1.png)
 
-![](/img/2.png)
+![](./images/2.png)
 
 
 # recommanded tool slim.ai

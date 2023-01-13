@@ -19,7 +19,7 @@ Docker uses seccomp, in filter mode, to limit the syscalls a container can make 
 
 As per the Docker security philosophy, all new containers get a default seccomp profile configured with sensible defaults. This is intended to provide moderate security without impacting application compatibility.
 
-![](/img/seccomp.png)
+![](./images/seccomp.png)
 
 As always, you can customize seccomp profiles, and you can pass a flag to Docker so that containers can be started without a seccomp profile.
 
@@ -36,7 +36,7 @@ Some of these technologies can be complicated to customize as they require deep 
 ## SecComp Exercise 1 
 
 
-```
+```bash
 grep SECCOMP /boot/config-$(uname -r)
 ```
 get the fitst test for seccomp in strict mode 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 }
 ```
 
-```
+```bash
 sudo gcc seccomp_stric.c -o seccomp_strict 
 ./seccomp_strict
 ```
@@ -77,7 +77,7 @@ open()system call is not allowed by secccomp strict mode
 
 get the file ro test for seccomp in filter mode 
 
-```
+```c
 #include <seccomp.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -117,27 +117,27 @@ void main(void)
 
 we have first initiazed the seccomp in filter mode . previouly have used `prctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);` to set the seccomp in strict mode . 
 
-```
+```bash
 sudo gcc seccomp_bpf.c -o seccomp_bpf
 ```
 install libseccomp-dev 
 
-``` 
+```bash
 sudo apt-get install libseccomp-dev
 ```
 
 
-```
+```bash
 sudo gcc seccomp_bpf.c -o seccomp_bpf -lseccomp
 ```
 
-```
+```bash
 ./seccomp_bpf
 ```
 
 output 
 
-```
+```bash
 initiating seccomp ...
 add rule to allow exit_group
 add rule to allow getpid
@@ -156,7 +156,7 @@ ID since we have added the rule to allow getpid() system call .
 open seccomp_bpf.c and add the following code to the end of the file
 
 
-```
+```c
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -194,7 +194,7 @@ void main(void)
 
 ```
 
-```
+```bsh
 $ suod gcc seccomp_bpf.c -o seccomp_bpf2 -lseccomp
 $ ./seccomp_bpf2
 initiating seccomp ...
@@ -212,19 +212,19 @@ this process is -9
 
 step 1. check the  SECCOMP is working and configured in docker daemon
 
-``` 
+```bash
 docker info | grep seccomp
 ```
 
 step 2. check the seccomp profile of the container
 
-```
+```bash
 docker inspect --format='{{json .HostConfig.SecurityOpt}}' <container_name>
 ```
 
 seccomp-profiles/deny.json
 
-```
+```json
 {
     "defaultAction": "SCMP_ACT_ERRNO",
     "architectures": [
@@ -261,9 +261,9 @@ notice here that since not even single system call is allwoed , the docker conta
 
 
 
-create sc-custom.js 
+create sc-custom.json
 
-```
+```json
 {
     "defaultAction": "SCMP_ACT_ALLOW",
     "architectures": [
@@ -293,11 +293,11 @@ before going to run this commands see what
 all system call actally take place while hitting mkdir command inside an alphine
 container using strace 
 
-```
+```bash
 docker run -rm -it --security-opt seccomp=unconfined alphine sh 
 ``` 
 
-```
+```bash
 apk add strace
 strace mkdir test
 exit
@@ -309,24 +309,24 @@ we have installed strace utility inside the container and then run the mkdir com
 
 Now run another contaiet with same aphine image with new `sc-custom.json` seccomp profile . 
 
-```
+```bash
 docker run -rm -it --security-opt seccomp=sc-custom.json alphine sh 
 ``` 
 
-```
+```bash
 ls 
 mkdir test
 ```
 mkdir: can't create directory 'test': Operation not permitted
 
-```
+```bash
 # chmod /etc/
 ```
 clearly , the seccomp profile attavhed is blocking the mkdir and chmod system call . 
 lets comfirm it with strace utility agin 
 
 
-```
+```bash
 apk add strace
 strace mkdir test
 ```
@@ -335,7 +335,7 @@ as expected the systm call got rejected with `Operation not permitted` error . s
 
 Run a docker container with the same seccomp file with chmpd over file 777 permission 
 
-```
+```bash
 $ docker run -rm -it --security-opt seccomp=sc-custom.json alphine sh chmod 777 /etc/passwd
 ```
 this os also denyed by the seccomp profile . 
@@ -356,7 +356,7 @@ appArmor works on file paths . it comes as default LSM for ubuntu and SUSE .
 
 1. let check our dpcler version and service status 
 
-```
+```bash
 
 $ docker version
 $ systemctl status docker 
@@ -366,13 +366,13 @@ $ systemctl status docker
 
 2. check AppArmor in docker info 
 
-```
+```bash
 docker info -f '{{json .SecurityOptions}}'
 ```
 
 3. chheck AppArmor status . it might required sudo access 
 
-```
+```bash
 $ apparmor_status
 $ sudo apparmor_status
 ```
@@ -380,14 +380,14 @@ this will provide us the infromation about all the profile loaded and the mode o
 
 the apparmor_status and aa-status can used interchangeably . just check if they are available with your system installation or not gernerally they comes in package call 
 `apparmor-utils` .
-```
+```bash
 
 $ which apparmor_status
 $ which aa-status
 ```
 and one can gain insight about the number of profile also 
 
-```
+```bash
 $ sudp aa-status --help 
 $ sudo aa-status --enabled [No error output means apparmor is enabled]
 $ sudo aa-status --profiles [prints the no of loaded policies ]
@@ -397,7 +397,7 @@ $ sudo aa-status --enforce [prints the no of enforced policies ]
 
 Install an AppArmor Profile generator tool called `bane`
 
-```
+```bash
 # Export the sha256sum for verification.
 $ export BANE_SHA256="e70b1d67333975eb705b08045de9558483daae05792a1ff28dcec28d4c164386"
 
@@ -415,7 +415,7 @@ $ bane -h
 get the sample TOML file for creation of AppArmor profile from bane Github 
 
 
-```
+```bash
 $ sudo curl -o sample.toml https://raw.githubusercontent.com/genuinetools/bane/master/sample.toml
 $ ls 
 ```
@@ -432,7 +432,7 @@ Name = "nginx-sample"
 
 b . `Filesystem ` table with different arrays like ReadOnlyPaths , LogOnWritePaths , WritePaths , ReadPaths , NoAccessPaths , ReadOnlyPaths . 
 
-```
+```bash
 
 [Filesystem]
 # read only paths for the container
@@ -482,7 +482,7 @@ DenyExec = [
 
 C. Capabilties table allow array for allowing Linux capabilities . 
 
-```
+```toml
 # allowed capabilities
 [Capabilities]
 Allow = [
@@ -498,7 +498,7 @@ Allow = [
 
 D . Network table with Raw , Packet , Protocols array .
 
-```
+```toml
 
 [Network]
 # if you don't need to ping in a container, you can probably
@@ -515,7 +515,7 @@ Protocols = [
 
 build the sample file with bane and check apparmor status if this profile gets enforced 
 
-```
+```bash
 $ sudo bane sample.toml
 $ sudo aa-status | grep docker 
 
@@ -523,16 +523,16 @@ $ sudo aa-status | grep docker
 notice that there was already loaded `docker-default` profile .
 
 
-```
+```bash
 $ sudo ls /etc/apparmor.d/containers/
 docker-ngnix-sample
 ```
 
-```
+```bash
 sudo cat /etc/apparmor.d/containers/docker-nginx-sample
 ```
 
-```
+```c
     #include <tunables/global>
 
     profile docker-nginx-sample flags=(attach_disconnected,mediate_deleted) {
@@ -584,7 +584,7 @@ Apply the above bane generated profile to the container before that lets
 analyze some commands that we can perfectly run within a container not attached to this profile 
 
 
-```
+```bash
 $ docker run -it --rm --name without-aa -p 4444:80 nginx bash 
 # sh
 # dash
@@ -597,7 +597,7 @@ in this ngnix container we are able to run many variants of shell like bash sh a
 
 now attach th profile and try to achive the same 
 
-``` 
+```bash
 $ docker run -it --rm --name with-aa --security-opt="apparmor:docker-nginx-sample" -p 4444:80  nginx bash 
 ```
 As expected, the attached AppArmor profile is not allowing us to spawn shells inside the container. This  is how an AppArmor profile can be attached to a Docker container using `--security-opt` and the different  executables and capabilities can be controlled.  Till now, we have seen that Docker uses many Linux technologies, such as Capabilities,  AppArmor and SecComp for defense. However, AppArmor can protect a Docker Host even  when the other lines of defense such as SecComp and Capabilities are not effective.  Remember that if you are not explicitly defining any AppArmor profile, the `default-docker`  AppArmor profile will get automatically attached. Until and unless `--security-opt  apparmor=unconfined` is not present during the container run command execution `default-docker`

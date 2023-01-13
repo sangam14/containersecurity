@@ -16,7 +16,7 @@ Backdooring images and leveraging auto-deployment mechanisms to attack Docker ho
 
 # Intracting with Insecure Registry 
 
-```
+```bash
 [node1] (local) root@192.168.0.18 ~
 $ docker run -d \
   -p 5000:5000 \
@@ -40,7 +40,7 @@ Status: Downloaded newer image for registry:2
 
 check 
 
-```     
+```  bash   
 [node1] (local) root@192.168.0.18 ~
 $ docker ps
 CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS          PORTS                    NAMES
@@ -50,7 +50,7 @@ CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS    
 
 pull image from docker hub and push to local registry
 
-```
+```bash
 [node1] (local) root@192.168.0.18 ~
 $ docker pull alpine:3.6
 3.6: Pulling from library/alpine
@@ -61,7 +61,7 @@ docker.io/library/alpine:3.6
 ```
 push to local registry
 
-```
+```bash
 [node1] (local) root@192.168.0.18 ~
 $ docker tag alpine:3.6 localhost:5000/alpine:3.6
 [node1] (local) root@192.168.0.18 ~
@@ -73,7 +73,7 @@ The push refers to repository [localhost:5000/alpine]
 ```
 remove image from local docker host
 
-```
+```bash
 [node1] (local) root@192.168.0.18 ~
 $ docker image remove localhost:5000/alpine:3.6
 Untagged: localhost:5000/alpine:3.6
@@ -81,7 +81,7 @@ Untagged: localhost:5000/alpine@sha256:36c3a913e62f77a82582eb7ce30d255f805c3d1e1
 ```
 pull new image from local registry
 
-```
+```bash
 [node1] (local) root@192.168.0.18 ~
 $  docker pull localhost:5000/alpine:3.6
 3.6: Pulling from alpine
@@ -91,7 +91,7 @@ localhost:5000/alpine:3.6
 [node1] (local) root@192.168.0.18 ~
 ```
 
-```
+```bash
 curl -s http://localhost:5000/v2/_catalog
 {"repositories":["alpine"]}
 ubuntu $ nmap -p 5000 localhost
@@ -107,20 +107,20 @@ Nmap done: 1 IP address (1 host up) scanned in 0.03 seconds
 
 # Fetching images using curl and analyzing image layers
 
-```
+```bash
 ubuntu $ curl -s http://localhost:5000/v2/alpine/tags/list
 {"name":"alpine","tags":["3.6"]}
 
 ```
 /_catalog endpoint returns a list of repositories available in the registry.
 
-```
+```bash
 ubuntu $ curl -s http://localhost:5000/v2/alpine/manifests/3.6 
 
 
 
 
-```
+```bash
 
 {
    "schemaVersion": 1,
@@ -164,7 +164,7 @@ ubuntu $ curl -s http://localhost:5000/v2/alpine/manifests/3.6
 ```
 
 
-```
+```bash
 
 #!/bin/bash
 

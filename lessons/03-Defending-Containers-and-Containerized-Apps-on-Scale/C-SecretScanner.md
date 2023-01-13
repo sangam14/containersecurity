@@ -11,7 +11,7 @@ One of most common mistake is leaking Secrets via docker images or file system i
 
 few days back I found this interesting tweet discussion from cybersecurity community members !
 
-%[https://twitter.com/hashnode/status/1571749391555506177] 
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Find secrets and passwords in container images and file systems <a href="https://t.co/ccejD09KR6">https://t.co/ccejD09KR6</a></p>&mdash; Nicolas Krassas (@Dinosn) <a href="https://twitter.com/Dinosn/status/1571745912086736909?ref_src=twsrc%5Etfw">September 19, 2022</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 here you see article around Uber security incidence  
 
@@ -117,30 +117,30 @@ docker build --no-cache --progress=plain --secret id=mysecret,src=secrets.txt .
 
 #5 \[2/2\] RUN --mount=type=secret,id=mysecret cat /run/secrets/mysecret #5 sha256:75601a522ebe80ada66dedd9dd86772ca932d30d7e1b11bba94c04aa55c237de #5 0.635 docker #5 DONE 0.7s
 
-#6 exporting to image
+# exporting to image
 
 ```plaintext
 lets see the leaked secret
 ```
 
-❯ docker history 49574a19241c IMAGE CREATED CREATED BY SIZE COMMENT 49574a19241c 5 minutes ago CMD \["/bin/sh"\] 0B buildkit.dockerfile.v0 5 minutes ago RUN /bin/sh -c cat /run/secrets/mysecret # b… 0B buildkit.dockerfile.v0 4 weeks ago /bin/sh -c #(nop) CMD \["/bin/sh"\] 0B 4 weeks ago /bin/sh -c #(nop) ADD file:aad4290d27580cc1a… 5.6MB \`\`\`
+```❯ docker history 49574a19241c IMAGE CREATED CREATED BY SIZE COMMENT 49574a19241c 5 minutes ago CMD \["/bin/sh"\] 0B buildkit.dockerfile.v0 5 minutes ago RUN /bin/sh -c cat /run/secrets/mysecret # b… 0B buildkit.dockerfile.v0 4 weeks ago /bin/sh -c #(nop) CMD \["/bin/sh"\] 0B 4 weeks ago /bin/sh -c #(nop) ADD file:aad4290d27580cc1a… 5.6MB ```
 
 but most modern way to scan docker images and file system you can use open source tool secretscanner that make developer life easy to detect leaked secretes
 
-> pull latest secretscanner image
+pull latest secretscanner image
 
 ```plaintext
 
 docker pull deepfenceio/deepfence_secret_scanner:latest
 ```
 
-> Pull docker image that you want to scan
+ Pull docker image that you want to scan
 
 ```plaintext
 docker pull node:8.11
 ```
 
-> Hund Secrets
+ Hund Secrets
 
 ```plaintext
 docker run -it --rm --name=deepfence-secretscanner -v $(pwd):/home/deepfence/output -v /var/run/docker.sock:/var/run/docker.sock deepfenceio/deepfence_secret_scanner:latest -image-name node:8.11
@@ -353,3 +353,4 @@ docker-compose.yml
 Check it out SecretScanner and support this project by giving gitstar !
 
 [![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=deepfence&repo=SecretScanner)](https://github.com/deepfence/SecretScanner)
+

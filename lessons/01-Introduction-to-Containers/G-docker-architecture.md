@@ -29,9 +29,9 @@ To interact with the Docker Engine using Go, we can use the official Docker API 
 
 Here are the steps to interact with the Docker Engine using Go:
 
-1. Import the necessary libraries:
+1.Import the necessary libraries:
 
-```
+```go
 import (
     "context"
     "github.com/docker/docker/api/types"
@@ -39,18 +39,18 @@ import (
 )
 
 ```
-2. Create a new Docker client:
+2.Create a new Docker client:
 
-```
+```go
 cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 if err != nil {
     log.Fatal(err)
 }
 
 ```
-3. Use the client to perform various actions on the Docker Engine, such as pulling an image from a registry:
+3.Use the client to perform various actions on the Docker Engine, such as pulling an image from a registry:
 
-```
+```go
 reader, err := cli.ImagePull(context.Background(), "alpine:latest", types.ImagePullOptions{})
 if err != nil {
     log.Fatal(err)
@@ -63,7 +63,7 @@ io.Copy(os.Stdout, reader)
 
 Close the client when finished:
 
-```
+```go
 reader, err := cli.ImagePull(context.Background(), "alpine:latest", types.ImagePullOptions{})
 if err != nil {
     log.Fatal(err)
@@ -78,13 +78,12 @@ io.Copy(os.Stdout, reader)
 Using the Docker API library for Go, we can perform various actions on the Docker Engine, such as pulling images, creating and managing containers, and more.
 
 
-
 # Docker Hub 
-
+<br>
 First, we need to import the necessary packages for interacting with Docker Hub. This includes the "net/http" package for making HTTP requests and the "encoding/json" package for parsing the response from Docker Hub.
-
+<br>
 Next, we need to define a function that makes an HTTP GET request to the Docker Hub API endpoint for retrieving a list of all available repositories. We can use the "http.NewRequest" function to create the request and the "http.DefaultClient.Do" function to execute the request.
-
+<br>
 We can then parse the response from Docker Hub using the "json.Unmarshal" function and store the list of repositories in a variable.
 
 Finally, we can iterate through the list of repositories and print out the name and description of each repository.
@@ -92,7 +91,7 @@ Finally, we can iterate through the list of repositories and print out the name 
 Here is the complete Golang program:
 
 
-```
+```go
 package main
 
 import (
@@ -144,7 +143,7 @@ Here are the steps to follow:
 4. Use the methods provided by the `client.Client` object to interact with the Docker daemon. Some examples of common methods include `ListContainers`, `InspectContainer`, and `CreateContainer`.
 For example, to list all running containers on the Docker daemon, you could use the following code:
 
-```
+```go
 
 package main
 
@@ -185,30 +184,30 @@ This code creates a new Docker client using the Unix socket located at `/var/run
 - Containerd 
 
 Containerd is a runtime for managing containers on a system. It is designed to be lightweight and efficient, making it a popular choice for use in container-based environments.
-
+<br>
 Here is an example of using Containerd to run a Docker container:
 
-1. Install ContainerD on your system:
+1.Install ContainerD on your system:
 
-```
+```bash
 sudo apt-get install containerd
 
 ```
 2. Start the Containerd daemon:
 
-```
+```bash
 sudo systemctl start containerd
 
 ```
 3. Pull a Docker image from the Docker Hub:
 
-```
+```bash
 docker pull ubuntu
 
 ```
 Run a Docker container using Containerd:
 
-```
+```bash
 containerd run --name my-container ubuntu
 ```
 
@@ -217,17 +216,17 @@ This will start a new Ubuntu container with the name "my-container" using Contai
 
 
 # shim 
-
+<br>
 Docker runtime is a term that refers to the environment in which Docker containers are executed. It includes the operating system, network, and storage resources required to run the containers.
 
 The Docker runtime also includes a shim, which is a small utility program that acts as an intermediary between the container and the host operating system. The shim is responsible for starting and stopping the container, as well as handling any errors or issues that may occur during execution.
 
 An example of how the shim works would be as follows:
 
-1. The user creates a Docker container and specifies the desired runtime environment (e.g. Linux, Windows, etc.)
-2. The container is built and stored in a Docker image, which includes all the necessary files and dependencies for the container to run.
-3. When the user runs the container, the shim is activated and begins executing the container's code.
-4. The shim manages the container's execution, including starting and stopping the container, handling errors, and allocating resources such as memory and CPU.
+1.The user creates a Docker container and specifies the desired runtime environment (e.g. Linux, Windows, etc.)
+2.The container is built and stored in a Docker image, which includes all the necessary files and dependencies for the container to run.
+3.When the user runs the container, the shim is activated and begins executing the container's code.
+4.The shim manages the container's execution, including starting and stopping the container, handling errors, and allocating resources such as memory and CPU.
 5. Once the container finishes executing, the shim shuts it down and releases any resources that were being used.
 
 The Docker runtime and shim work together to ensure that containers are able to run smoothly and efficiently within the specified environment.
@@ -240,13 +239,13 @@ Here is an example of using runc to run a Docker container:
 
 1. First, pull a Docker image from the registry using the 'docker pull' command:
 
-```
+```bash
 docker pull alpine
 
 ```
 2. Next, create a configuration file for the container using the 'runc spec' command:
 
-```
+```bash
 runc spec
 
 ```
@@ -255,7 +254,7 @@ runc spec
 
 4. To create and start the container, use the 'runc run' command, followed by the name of the container and the configuration file:
 
-```
+```bash
 runc run my-container config.json
 
 ```
@@ -263,13 +262,13 @@ This will start the container based on the specified configuration and run the d
 
 To stop the container, use the 'runc kill' command:
 
-```
+```bash
 runc kill my-container
 
 ```
 And to delete the container, use the 'runc delete' command:
 
-```
+```bash
 
 runc delete my-container
 

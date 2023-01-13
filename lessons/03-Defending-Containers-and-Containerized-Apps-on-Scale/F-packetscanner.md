@@ -15,27 +15,27 @@ https://github.com/deepfence/package-scanner
 
 Download binary 
 
-package-scanner_Darwin_arm64.tar.gz
-package-scanner_Darwin_x86_64.tar.gz
-package-scanner_Linux_arm64.tar.gz
-package-scanner_Linux_x86_64.tar.gz
-package-scanner_darwin_amd64_v1
-package-scanner_darwin_arm64
-package-scanner_linux_amd64_v1
-package-scanner_linux_arm64
+- package-scanner_Darwin_arm64.tar.gz
+- package-scanner_Darwin_x86_64.tar.gz
+- package-scanner_Linux_arm64.tar.gz
+- package-scanner_Linux_x86_64.tar.gz
+- package-scanner_darwin_amd64_v1
+- package-scanner_darwin_arm64
+- package-scanner_linux_amd64_v1
+- package-scanner_linux_arm64
 
 
 ClI usage
 
 scan a docker image for vulnerabilities 
 
-``` 
+``` bash
 ./package-scannner -source nginx:latest
 ```
 
 Scan a docker images , filter for critical vulnerabilities 
 
-```
+```bash
 ./package-scanner -source nginx:latest -severity critical
 ```
 
@@ -44,7 +44,7 @@ Scan a docker images with CVEs
 
 
 
-```
+```bash
 ./package-scanner -source nginx:latest
 INFO[2023-01-06T15:10:15+05:30] autodetect.go:91 trying to connect to endpoint 'unix:///var/run/docker.sock' with timeout '10s' 
 INFO[2023-01-06T15:10:15+05:30] autodetect.go:116 connected successfully using endpoint: unix:///var/run/docker.sock 
@@ -191,6 +191,6 @@ summary:
 
 ## docker image standlone scanner
 
-``` 
+```bash
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock sangam14/package-scanner:latest -source nginx:latest
 ```

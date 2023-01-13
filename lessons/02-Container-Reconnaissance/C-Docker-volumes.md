@@ -13,7 +13,6 @@ Create a Docker volume using the docker volume create command, for example:
 
 ```
 $ docker volume create encrypted_volume
-
 ```
 
 Create a Docker container that will be used to create the encrypted volume. For this, you can use a tool like luksipc, which allows you to create a LUKS-encrypted file within a container.
@@ -22,14 +21,11 @@ Run the `luksipc`container with the `--volume` flag to specify the Docker volume
 
 ```
 $ docker run --rm -it --volume encrypted_volume:/volume luksipc create
-
 ```
 
 Follow the prompts to create the encrypted volume. You will be asked to specify a passphrase that will be used to encrypt and decrypt the volume.
 
 Once the volume is created, you can use it like any other Docker volume. For example, you can mount it to a container using the -v flag:
-
-
 
 ```
 $ docker run --rm -it -v encrypted_volume:/data ubuntu bash
@@ -40,7 +36,6 @@ To decrypt the volume, you can use the `luksipc` container again and specify the
 
 ```
 $ docker run --rm -it --volume encrypted_volume:/volume luksipc unlock
-
 
 ```
 

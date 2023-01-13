@@ -15,12 +15,12 @@ images, and send images to the registry)
 5. Hosts (run and stop containers as directed by the orchestrator)
 
 
-![](/img/container-technology-arch.png)
+![](./images/container-technology-arch.png)
 
 
 ## Attack surface of the container ecosystem
 
-![](/img/Container-Threat-model.png)
+![](./images/Container-Threat-model.png)
 
 
 

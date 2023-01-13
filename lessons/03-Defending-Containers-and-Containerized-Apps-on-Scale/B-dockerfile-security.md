@@ -10,8 +10,9 @@ description: "DockerFile Security Best Practices "
 
 - Choose Minimal Base Images 
 
-```
+![](./images/minimal.gif)
 
+```Dockerfile
 FROM alpine
 WORKDIR /app
 COPY package.json /app
@@ -20,9 +21,11 @@ CMD [“node”,“index.js”]
 
 ```
 
-- Remove Cache Packages
 
-```
+- Remove Cache Packages
+![](./images/cache-package.jpeg)
+
+```Dockerfile
 FROM alpine
 RUN apk add nginx && rm -rf /var/cache/apt/*
 COPY index.html /var/www/html/
@@ -30,7 +33,7 @@ EXPOSE 80
 CMD [“nginx”,“-g”,“daemon off;”]
 ```
 
-```
+```Dockerfile
 FROM alpine
 RUN apk add –no-cache nginx
 COPY index.html /var/www/html/
@@ -40,9 +43,9 @@ CMD [“nginx”,“-g”,“daemon off;”]
 
 - avoid multilayers 
 
-![](/img/multilayer.png)
+![](https://miro.medium.com/max/1000/0*FMAsrFS11TCJaQl5.gif)
 
-```
+```Dockerfile 
 FROM alpine
 RUN apk update
 RUN apk add curl
@@ -54,7 +57,7 @@ EXPOSE 80
 CMD [“nginx”,“-g”,“daemon off;”]
 ```
 
-```
+```Dockerfile
 FROM alpine
 RUN apk update && apk add curl nginx nginx-mod-http-geoip2-1.16.1-r6 \
 rm -rf /var/cache/apt/*
@@ -63,7 +66,10 @@ EXPOSE 80
 CMD [“nginx”,“-g”,“daemon off;”]
 
 ```
-- Don't ignore .dockerignore
+- Don't ignore `.dockerignore`
+
+![](https://miro.medium.com/max/800/0*FNJQYGBJTCJ6CwwI.gif)
+
 ```
 node_modules
 .env
@@ -72,7 +78,7 @@ secrets/
 *.md
 ```
 
-```
+```Dockerfile
 FROM node:10
 WORKDIR /nodeapp
 COPY package.json ./
@@ -84,11 +90,14 @@ CMD [ “node”, “index.js” ]
 
 - choose slim variant  
 
-![](/img/slim.png)
+
+![](https://s3.amazonaws.com/media-p.slid.es/uploads/1936196/images/8841214/pasted-from-clipboard.png)
 
 - cut the root
 
-```
+![](https://s3.amazonaws.com/media-p.slid.es/uploads/1936196/images/8841215/pasted-from-clipboard.png)
+
+```Dockerfile
 FROM node:10
 WORKDIR /app
 COPY package.json ./
@@ -98,7 +107,7 @@ EXPOSE 8888
 CMD [ “node”, “index.js” ]
 ```
 
-```
+```Dockerfile
 FROM node:10
 RUN user add -m nodeapp
 USER nodeappuser
@@ -111,22 +120,32 @@ EXPOSE 8888
 CMD [ “node”, “index.js” ]
 
 ```
-![](/img/remove-unwanted.png)
 
+## Remove Unwanted 
+
+![](https://miro.medium.com/max/1060/0*5Kgip-LsvTRHXb7f.gif)
 
 
 TAG Wisely
 
-![](/img/tag-wisely.png)
+
+
+![](https://miro.medium.com/max/960/0*XchFJrkVCTwcC1Aj.gif)
 
 So No to latest Tags
 
+![](https://s3.amazonaws.com/media-p.slid.es/uploads/1936196/images/8841223/pasted-from-clipboard.png)
+
 Public Private Registry 
 
+![](https://miro.medium.com/max/960/0*cWv3QB9YHc_5a3D_.gif)
 
 keep it single 
+![](https://miro.medium.com/max/700/0*RJiU_CQIcwj5t-6I.gif)
 
-Avoid Hard Coding
+## Avoid Hard Coding
+
+![](https://miro.medium.com/max/1000/0*cg2kGD2eKdypyJzT.gif)
 
 ```
 ARG VERSION
@@ -147,8 +166,9 @@ docker build -t testimage –build-arg VERSION=9 .
 
 adding metadata 
 
-```
+![](https://miro.medium.com/max/1374/0*Pz7-FhTCNRu7Qs9B.jpg)
 
+```
 FROM node:10
 LABEL version=“1.0” maintainer=“Sangam Biradar <cXXXXXXo@gmail.com>”
 WORKDIR /app
@@ -164,7 +184,7 @@ Rego Policies
 
 - write custom policies 
 
-```
+```json
 
 package play
 

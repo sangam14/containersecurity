@@ -20,7 +20,7 @@ hadolint - Dockerfile Linter written in Haskell
 ```
 We’ll use the following Dockerfile as an example, which can be used to run a Python Django web server. On the surface, it looks fine but we’ll see it has a lot of problems.
 
-```
+```Dockerfile
 FROM python
 MAINTAINER xyx
 LABEL org.website="xyz"
@@ -40,7 +40,7 @@ CMD python manage.py runserver 0.0.0.0:80000
 
 Let’s run it through Hadolint:
 
-```
+```bsh
 
 $ hadolint Dockerfile
 Dockerfile:1 DL3006 warning: Always tag the version of an image explicitly
@@ -67,13 +67,13 @@ Every rule has a dedicated documentation page that lists code examples, rational
 
 You can ignore one or more rules using the `--ignore RULECODE` option:
 
-```
+```bash
 $ hadolint --ignore DL3013 --ignore DL3042 Dockerfile
 
 ```
 You can also ignore rules within the Dockerfile inline. I prefer this approach because you can exclude rule codes on a per-line basis and it’s more clear where the violation is actually happening.
 
-```
+```bash
 # hadolint ignore=DL3013
 RUN pip install --upgrade pip
 ```
@@ -87,7 +87,7 @@ The severity level indicates how critical a violation is. There are six levels: 
 
 The CLI includes a --failure-threshold (abbreviated as -t) to exclude certain severity levels from causing a failure. For example, if you only want Hadolint to fail on error violations.
 
-```
+```bash
 $ hadolint -t error Dockerfile
 
 ```
@@ -95,8 +95,7 @@ Note, violations from other severity levels will still be reported but they won�
 
 If you don’t agree with a rule code’s severity level, you can easily change it using the --<SEVERITY_LEVEL> RULECODE option. For example, the following command upgrades DL3006 to error and downgrades DL3045 to info (both codes are warning by default):
 
-```
-
+```bash
 $ hadolint --error DL3006 --info DL3045 Dockerfile
 Dockerfile:1 DL3006 error: Always tag the version of an image explicitly
 Dockerfile:7 DL3045 info: `COPY` to a relative destination without `WORKDIR` set.
@@ -109,20 +108,16 @@ Working through each error one-by-one is a fantastic exercise for learning about
 
 At this point, Hadolint should report no errors. Your file should look similar to this:
 
-```
+```bash
 FROM python:3.10
 LABEL maintainer="xyz"
 LABEL org.website="xyz"
- 
 WORKDIR /app
- 
 COPY requirements.txt ./
 # hadolint ignore=DL3013
 RUN pip install --upgrade --no-cache-dir pip && \
  pip install --no-cache-dir -r requirements.txt
- 
 COPY . .
- 
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 ```

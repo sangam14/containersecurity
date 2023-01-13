@@ -9,10 +9,9 @@ description: "  "
  # docker daemon security configuration  
 
 
-
 Install docker CE 19.03 
 
-```
+```bash
 
 # yum install -y yum-utils device-mapper-persistent-data lvm2
 # yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -30,7 +29,7 @@ Docker version 19.03.8, build afacb8b
 There is no configuration file by default, which needs to be created separately/etc/docker/daemon.json, the following configurations are all local test examples configured on this file.
 
 
-```
+```json
 {
  "icc": false,
  "log-level": "info",
@@ -68,22 +67,22 @@ Create a host and define a domain (IP can also be used). The corresponding certi
 
 Create certificate Directory:
 
-```
+```bash
 $ mkdir -p /etc/docker/dockerd/CA && cd /etc/docker/dockerd/CA
 ```
 
 
 Generate the key certificate and fill in the key certificate password twice:
-```
+```bash
 $ openssl genrsa -aes256 -out ca-key.pem 4096
 ```
 To generate a CA certificate, you need to enter the basic information of the registration certificate:
-```
+```bash
 $ openssl req -new -x509 -days 365 -key ca-key.pem -sha256 -out ca.pem
 ```
 Create server certificate:
 
-```
+```bash
 $ openssl genrsa -out server-key.pem 4096
 
 $ openssl req -subj "/CN=localhsot" -sha256 -new -key server-key.pem -out server.csr
@@ -92,21 +91,21 @@ $ openssl req -subj "/CN=localhsot" -sha256 -new -key server-key.pem -out server
 Set the IP address specified by the certificate:
 
 
-```
+```bash
 $ echo subjectAltName = DNS:localhost,IP:127.0.0.1 >> extfile.cnf
 ```
 Set the extended usage property of the docker daemon key to server authentication only:
-```
+```bash
 $ echo extendedKeyUsage = serverAuth >> extfile.cnf
 ```
 Generate server cert certificate:
-```
+```bash
 $ openssl x509 -req -days 3650 -sha256 -in server.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem -extfile extfile.cnf
 ```
 Client certificate
 
 Create client certificate: (or current directory)
-```
+```bash
 $ openssl genrsa -out key.pem 4096
 $ openssl req -subj '/CN=localhost' -new -key key.pem -out client.csr
 
@@ -114,15 +113,13 @@ $ openssl req -subj '/CN=localhost' -new -key key.pem -out client.csr
 To make the key suitable for client authentication, create an extended profile:
 
 
-```
-
+```bash
 $ echo extendedKeyUsage = clientAuth >> extfile.cnf
 ```
 
 Generate client cert certificate:
 
-```
-
+```bash
 $ openssl x509 -req -days 3650 -sha256 -in client.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out cert.pem -extfile extfile.cnf
 
 ```
@@ -131,7 +128,7 @@ use
 
 Give corresponding permissions to the certificate:
 
-```
+```bash
 $ chmod -v 0400 ca-key.pem key.pem server-key.pem
 $ chmod -v 0444 ca.pem server-cert.pem cert.pem
 
@@ -141,21 +138,20 @@ ca-key.pem ca.pem ca.srl cert.pem client.csr extfile.cnf key.pem server-cert.pem
 ```
 Server configuration /etc/docker/daemon.json
 
-```
+```json
 
 "tls": true,
 "tlsverify": true,
 "tlscacert": "/etc/docker/CA/ca.pem",
 "tlscert": "/etc/docker/CA/server-cert.pem",
 "tlskey": "/etc/docker/CA/server-key.pem"
-
-
 ```
+
 Client configuration
 
 Set the client certificate on the server and place it in the corresponding location:
 
-```
+```bash
 $ cp -v {ca,cert,key}.pem ~/.docker
 $ export DOCKER_HOST=tcp://$HOST:2376 DOCKER_TLS_VERIFY=1
 
@@ -163,7 +159,7 @@ $ export DOCKER_HOST=tcp://$HOST:2376 DOCKER_TLS_VERIFY=1
 
 Simulate the test as follows:
 
-```
+```json
 $ curl https://$HOST:2376/images/json 
  --cert ~/.docker/cert.pem 
  --key ~/.docker/key.pem 
@@ -179,7 +175,7 @@ Namespace is an isolation technology. Docker uses the isolation technology to op
 
 
 Modify first/etc/sysctl.conf
-```
+```conf
 # echo “user.max_user_namespaces=15076” >> /etc/sysctl.conf
 ```
 stay /etc/docker/daemon.json Add the configuration item “userns remap”: “default”
@@ -198,7 +194,7 @@ dockremap:100000:65536
 
 Create a separate partition for the container. The default partition isvarlibdocker, including local images, containers, networks and other related things.
 
-```
+```bash
 
 root@localhost docker]# ls /var/lib/docker
 ```
@@ -221,7 +217,7 @@ Configure to limit the traffic “ICC” between containers on the default bridg
 
 Configure the centralized remote log, set the log process — log level level to info, log record format JSON, local log record
 
-```
+```json
 
 "log-level": "info",
 "log-driver": "json-file",
@@ -234,7 +230,7 @@ Configure the centralized remote log, set the log process — log level level to
 
 ```
 
-![Alt text](/img/config-remote.jpg)
+![Alt text](./images/config-remote.jpg)
 
 
 The docker logging driver receives the container log and forwards it to a remote destination or file. The default logging driver isjson-file。 It stores container logs on local disk in JSON format. Docker has a plug-in architecture for logging, so there are plug-ins for open source tools and commercial tools:
@@ -335,7 +331,7 @@ For example: there is a program with setuid / setgid bit set in the image, such 
 #  Daemon configuration example description (Linux)
 
 
-```
+```bash
 {
   "authorization-plugins": [],//access authorization plugin
   "data-root": "", //the root directory of docker data persistent storage, the default is /var/lib/docker

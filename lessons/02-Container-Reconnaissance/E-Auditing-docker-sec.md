@@ -5,7 +5,7 @@ description: " Auditing Docker Security "
 
 ---
 
-# Auditing Docker Security
+## Auditing Docker Security
 
 DOCKER BENCH FOR SECURITY
 
@@ -13,12 +13,12 @@ Docker Bench for Security is an open source Bash script that checks for various 
 on GitHub: https://github.com/docker/docker-bench-security
 
 
-# auditing docker security with docker bench for security 
+## auditing docker security with docker bench for security 
 
 
 The auditing process can be performed by following the procedures outlined below:
 
-1. You first need to clone the docker/docker-bench-security GitHub repository on your Docker host. This can be done by running the following command:
+You first need to clone the docker/docker-bench-security GitHub repository on your Docker host. This can be done by running the following command:
 
 
 ```
@@ -50,8 +50,8 @@ Section C - Score
 
 # Docker Bench for Security Options 
 
-```
-b           optional  Do not print colors
+```bash
+   b           optional  Do not print colors
   -h           optional  Print this help message
   -l FILE      optional  Log output in FILE, inside container if run using docker
   -u USERS     optional  Comma delimited list of trusted docker user(s)
@@ -64,10 +64,9 @@ b           optional  Do not print colors
 
 ```
 
-
-
 ## Running Docker Bench for poticular docker images 
-```
+
+```bash
 sudo ./docker-bench-security.sh -i hello-world
 Password:
 # --------------------------------------------------------------------------------------------
@@ -207,7 +206,6 @@ usage: stat [-FLnq] [-f format | -l | -r | -s | -x] [-t timefmt] [file ...]
 [INFO]       * File not found
 [INFO] 3.24 - Ensure that the Containerd socket file permissions are set to 660 or more restrictively (Automated)
 [INFO]       * File not found
-
 [INFO] 4 - Container Images and Build File
 [INFO] 4.1 - Ensure that a user for the container has been created (Automated)
 [INFO]      * No containers running
@@ -222,17 +220,14 @@ usage: stat [-FLnq] [-f format | -l | -r | -s | -x] [-t timefmt] [file ...]
 [NOTE] 4.10 - Ensure secrets are not stored in Dockerfiles (Manual)
 [NOTE] 4.11 - Ensure only verified packages are installed (Manual)
 [NOTE] 4.12 - Ensure all signed artifacts are validated (Manual)
-
 [INFO] 5 - Container Runtime
 [INFO]   * No containers running, skipping Section 5
-
 [INFO] 6 - Docker Security Operations
 [INFO] 6.1 - Ensure that image sprawl is avoided (Manual)
 [INFO]      * There are currently: 13 images
 [INFO]      * Only 0 out of 13 are in use
 [INFO] 6.2 - Ensure that container sprawl is avoided (Manual)
 [INFO]      * There are currently a total of 40 containers, with 18 of them currently running
-
 [INFO] 7 - Docker Swarm Configuration
 [PASS] 7.1 - Ensure swarm mode is not Enabled, if not needed (Automated)
 [PASS] 7.2 - Ensure that the minimum number of manager nodes have been created in a swarm (Automated) (Swarm mode not enabled)
@@ -247,16 +242,11 @@ usage: stat [-FLnq] [-f format | -l | -r | -s | -x] [-t timefmt] [file ...]
 
 
 Section C - Score
-
 [INFO] Checks: 86
 [INFO] Score: -1
 
 
 ```
-
-
-
-
 
 # Run the Docker daemon as a non-root user, if possible (Manual) 
 
@@ -265,12 +255,12 @@ The Docker containers by default run with the root privilege and so does the app
 
 Add user to Docker group
 
-```
+```bash
 $ sudo groupadd docker
 ```
 add your user to the docker group:
 
-```
+```bash
 sudo usermod -aG docker [non-root user]
 
 ```
@@ -280,7 +270,7 @@ Using Dockerfile (USER instruction)
 dit the Dockerfile that creates a non-root privilege user and modify the default root user to the newly-created non-root privilege user, as shown here:
 
 
-```
+```bash
 ##########################################
 # Dockerfile to change from root to 
 # non-root privilege
@@ -292,23 +282,23 @@ RUN useradd -u 8877 sangam
 # Change to non-root privilege
 USER sangam
 
-
 ```
-
 
 Proceed to build the Docker image using the “docker build” subcommand, as depicted here:
-```
+
+```bash
 sudo docker build -t nonrootimage .
 
 ```
  Finally, let’s verify the current user of our container using the id command in a docker run subcommand:
 
- ```
+```bash
 sudo docker run --rm nonrootimage id
- ```
+```
 
 # Ensure network traffic is restricted between containers on the default bridge
-```
+
+```bash
 sudo docker network ls 
 Password:
 NETWORK ID     NAME                                                         DRIVER    SCOPE
@@ -319,7 +309,8 @@ beb64c03a4cf   bridge                                                       brid
 47444c7b3650   multinode-pod-security                                       bridge    local
 ed5ab538e49a   none                                                         null      local
 ```
-```
+
+```bash
 sudo docker network inspect bridge
 
 Password:
@@ -370,7 +361,7 @@ By default, unrestricted network traffic is enabled amongst all containers on th
 To disable the inter-container communication, configure the daemon with the icc flag set to false. Note that this configuration can be overridden by containers that are run with the deprecated --link option.
 
 
-```
+```bash
 $ docker network ls -q | xargs docker network inspect -f '{{ .Name }}: {{ .Options }}'
 ```
 The com.docker.network.bridge.enable_icc should be set to false for the default network bridge.
@@ -385,7 +376,7 @@ The non-networked /var/run/docker.sock UNIX socket is used by default to locally
 
 Run this command to review the correctness of the Docker UNIX socket permissions.
 
-```
+```bash
 $ ls -l /var/run/docker.sock
 lrwxr-xr-x  1 root  daemon  44  4 Jan 17:16 /var/run/docker.sock -> /Users/sangambiradar/.docker/run/docker.sock
 ```
@@ -396,19 +387,19 @@ nsecure registries do not use TLS, nor do they have an invalid TLS certificate. 
 
 Run the below command to list the insecure registries used by the Docker daemon.
 
-```
+```bash
 
 docker info --format '{{.RegistryConfig.InsecureRegistryCIDRs}}'
 
 ```
 
 # Enable user namespace support 
-```
+```bash
 ps aux | grep dockerd
 sangambiradar    34266   0.0  0.0 408626880   1280 s000  S+    7:22PM   0:00.00 grep --color=auto --exclude-dir=.bzr --exclude-dir=CVS --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn --exclude-dir=.idea --exclude-dir=.tox dockerd
 ```
 
-```
+```bash
 docker container run -it --rm alpine /bin/sh
 Unable to find image 'alpine:latest' locally
 latest: Pulling from library/alpine
@@ -421,17 +412,13 @@ root
 
 To follow the principle of least privilege, containerized applications should not be run as root. To achieve this, then the --user parameter can be used to specify a user other than root for the container. It accepts as value a username (if it was previously created in the Dockerfile) or a UID, optionally a GID as well.
 
- 
-
-
-
 ## Enable Content Trust
 Ensure Content trust for Docker is Enabled. Content trust is a system for signing Docker images and verifying their signatures before running them. We can enable content trust with the `DOCKER_CONTENT_TRUST` environment variable.
 
 To set this variable for your current shell 
 session, type the following into the shell:
 
-```
+```bash
 export DOCKER_CONTENT_TRUST=1
 
 ```
@@ -439,19 +426,18 @@ export DOCKER_CONTENT_TRUST=1
 
 Running the audit after this export command should show that Content trust has been enabled and clear this warning. To enable it automatically for all users and all sessions, add the `DOCKER_CONTENT_TRUST` variable to the `/etc/environment` file, which is a file for assigning system-wide environment variables:
 
-```
+```bash
 echo "DOCKER_CONTENT_TRUST=1" | sudo tee -a /etc/environment
 
 ```
 
 ## Ensure auditing is configured for various Docker files
 
-```
-
+```bash
 sudo apt-get install auditd
 ```
 
-```
+```bash
 sudo nano /etc/audit/audit.rules
 ubuntu@enormous-longspur:~$ sudo cat  /etc/audit/audit.rules
 ## This file is automatically generated from /etc/audit/rules.d
@@ -474,13 +460,13 @@ ubuntu@enormous-longspur:~$ sudo cat  /etc/audit/audit.rules
 
 Restart auditd for the changes to take effect:
 
-```
+```bash
 sudo systemctl restart auditd
 ```
 
 ## Correcting Docker Daemon Configuration Warnings
 
-```
+```bash
 sudo nano /etc/docker/daemon.json
 ubuntu@docker:~/docker-bench-security$ cat nano /etc/docker/daemon.json
 cat: nano: No such file or directory
@@ -504,16 +490,14 @@ sudo systemctl restart docker
 
 Content trust is a system for signing Docker images and verifying their signatures before running them. We can enable content trust with the DOCKER_CONTENT_TRUST environment variable.
 
-```
-
-
+```bash 
 export DOCKER_CONTENT_TRUST=1
 
 ```
 
 Running the audit after this export command should show that Content trust has been enabled and clear this warning. To enable it automatically for all users and all sessions, add the DOCKER_CONTENT_TRUST variable to the /etc/environment file, which is a file for assigning system-wide environment variables:
 
-```
+```bash 
 echo "DOCKER_CONTENT_TRUST=1" | sudo tee -a /etc/environment
 
 ```
