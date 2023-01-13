@@ -45,7 +45,7 @@ export default function Lessons({ sections }) {
           </div>
           <div className="courseIcon">
             <img
-              src={`${process.env.BASE_URL}/images/course-icon.png`}
+              src={`${process.env.BASE_URL}/images/Cloudnativefolks-Community-Logo-D7.png`}
               alt="course icon"
             />
           </div>
