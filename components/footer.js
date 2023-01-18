@@ -2,6 +2,7 @@ import React from "react";
 import Gh from "./github";
 import Tw from "./twitter";
 import Li from "./linkedin";
+import GitHubButton from 'react-github-btn'
 
 export default function Footer({ twitter, linkedin, github }) {
   return (
@@ -35,6 +36,8 @@ export default function Footer({ twitter, linkedin, github }) {
           </div>
         </li>
       </ul>
+      <GitHubButton href="https://github.com/sangam14/containersecurity" data-color-scheme="no-preference: light; light: light_high_contrast; dark: dark_dimmed;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star sangam14/containersecurity on GitHub">Star</GitHubButton>
+
     </footer>
   );
 }

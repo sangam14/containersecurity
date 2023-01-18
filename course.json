@@ -1,6 +1,11 @@
 {
   "author": {
     "name": "Sangam Birdar",
+    "social": {
+      "linkedin": "sanngambiradar",
+      "github": "sangam14",
+      "twitter": "BiradarSangam"
+    },
     "company": "deepfence.io"
   },
   "title": "Container Security",

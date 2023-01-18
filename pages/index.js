@@ -1,6 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
-
+import GitHubButton from 'react-github-btn'
 import { getLessons } from "../data/lesson";
 
 import Corner from "../components/corner";
@@ -38,6 +38,8 @@ export default function Lessons({ sections }) {
                 </div>
                 <div className="info">
                   <div className="name">{courseInfo.author.name}</div>
+                  <div> 
+<GitHubButton href="https://github.com/sangam14" data-color-scheme="no-preference: light; light: light_high_contrast; dark: dark_dimmed;" data-size="large" data-show-count="true" aria-label="Follow @sangam14 on GitHub">Follow @sangam14</GitHubButton></div>
                   <div className="company">{courseInfo.author.company}</div>
                 </div>
               </div>

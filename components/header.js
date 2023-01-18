@@ -1,5 +1,7 @@
 import { useContext } from "react";
 import Link from "next/link";
+import GitHubButton from 'react-github-btn'
+
 import { Context as HeaderContext } from "../context/headerContext";
 import { Context as CourseContext } from "../context/courseInfoContext";
 
@@ -10,6 +12,7 @@ export default function Header(props) {
     <header className="navbar">
       <h1 className="navbar-brand">
         <Link href="/">{props.title}</Link>
+
       </h1>
       <div className="navbar-info">
         {frontendMastersLink ? (
