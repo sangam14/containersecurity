@@ -1,0 +1,457 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"/><meta charSet="utf-8"/><link rel="apple-touch-icon" sizes="180x180" href="/containersecurity/images/apple-touch-icon.png"/><link rel="icon" type="image/png" sizes="32x32" href="/containersecurity/images/favicon-32x32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/containersecurity/images/favicon-16x16.png"/><link rel="icon" type="image/png" sizes="16x16" href="/containersecurity/images/favicon-16x16.png"/><link rel="icon" type="image/x-icon" href="/containersecurity/images/favicon.ico"/><title> Docker host security configurations  – Container Security</title><meta name="description" content="learn Container Security "/><meta name="keywords" content="web dev,web developer,css,javascript,html,visual studio code,learn to code"/><meta name="og:description" content="learn Container Security "/><meta name="og:title" content=" Docker host security configurations  – Container Security"/><meta name="og:image" content="/containersecurity/images/social-share-cover.jpg"/><meta name="twitter:card" content="summary_large_image"/><meta name="next-head-count" content="14"/><link rel="preload" href="/containersecurity/_next/static/css/872f06f7d8ead724.css" as="style"/><link rel="stylesheet" href="/containersecurity/_next/static/css/872f06f7d8ead724.css" data-n-g=""/><noscript data-n-css=""></noscript><script defer="" nomodule="" src="/containersecurity/_next/static/chunks/polyfills-5cd94c89d3acac5f.js"></script><script src="https://storage.googleapis.com/app.klipse.tech/plugin_prod/js/klipse_plugin.min.js" defer="" data-nscript="beforeInteractive"></script><script src="/containersecurity/_next/static/chunks/webpack-1f5264de0e9b401f.js" defer=""></script><script src="/containersecurity/_next/static/chunks/framework-fc97f3f1282ce3ed.js" defer=""></script><script src="/containersecurity/_next/static/chunks/main-bc5c9816ce0cf4e6.js" defer=""></script><script src="/containersecurity/_next/static/chunks/pages/_app-23a08418d481e3ae.js" defer=""></script><script src="/containersecurity/_next/static/chunks/422-97d050c6a559f504.js" defer=""></script><script src="/containersecurity/_next/static/chunks/pages/lessons/%5Bsection%5D/%5Bslug%5D-4905e3009a5c73a6.js" defer=""></script><script src="/containersecurity/_next/static/UBfITahn1ykxbPLW13lbA/_buildManifest.js" defer=""></script><script src="/containersecurity/_next/static/UBfITahn1ykxbPLW13lbA/_ssgManifest.js" defer=""></script><script src="/containersecurity/_next/static/UBfITahn1ykxbPLW13lbA/_middlewareManifest.js" defer=""></script></head><body><div id="__next"><div class="course-app"><header class="navbar"><h1 class="navbar-brand"><a href="/containersecurity">Container Security</a></h1><div class="navbar-info"><a href="https://discord.com/invite/9ERSnT7" class="cta-btn">Join CloudNativeFolks Community</a></div></header><div class="content-container"><div class="main"><div class="lesson-container"><div class="lesson"><div class="lesson-content"><h2 id="seccomp-and-apparmor">SecComp and AppArmor</h2>
+<p>Docker works with major Linux MAC technologies such as AppArmor and SELinux.</p>
+<p>Depending on your Linux distribution, Docker applies a default AppArmor profile to all new containers. According to the Docker documentation, this default profile is “moderately protective while providing wide application compatibility”.</p>
+<p>Docker also lets you start containers without a policy applied, as well as giving you the ability to customize policies to meet specific requirements. This is also very powerful, but can also be prohibitively complex.</p>
+<h2 id="seccomp">seccomp</h2>
+<p>Docker uses seccomp, in filter mode, to limit the syscalls a container can make to the host’s kernel.</p>
+<p>As per the Docker security philosophy, all new containers get a default seccomp profile configured with sensible defaults. This is intended to provide moderate security without impacting application compatibility.</p>
+<p><img src="/containersecurity/./images/seccomp.png" alt=""></p>
+<p>As always, you can customize seccomp profiles, and you can pass a flag to Docker so that containers can be started without a seccomp profile.</p>
+<p>As with many of the technologies already mentioned, seccomp is extremely powerful. However, the Linux syscall table is long, and configuring the appropriate seccomp policies can be prohibitively complex.</p>
+<h1 id="concluding-linux-security-technologies">Concluding Linux security technologies</h1>
+<p>Docker supports most of the important Linux security technologies and ships with sensible defaults that add security but aren’t too restrictive. The figure below shows how these technologies form multiple layers of potential security.</p>
+<p>Some of these technologies can be complicated to customize as they require deep knowledge of how the Linux kernel works. Hopefully, they will get simpler to configure in the future, but for now, the default configurations that ship with Docker might be a good place to start.</p>
+<h2 id="seccomp-exercise-1">SecComp Exercise 1</h2>
+<pre><code class="hljs language-bash">grep SECCOMP /boot/config-$(<span class="hljs-built_in">uname</span> -r)
+</code></pre>
+<p>get the fitst test for seccomp in strict mode </p>
+<pre><code class="hljs language-seccomp_strict.c">#include &lt;fcntl.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;string.h&gt;
+#include &lt;linux/seccomp.h&gt;
+#include &lt;sys/prctl.h&gt;
+
+
+int main(int argc, char **argv)
+{
+        int output = open(&quot;output.txt&quot;, O_WRONLY);
+        const char *val = &quot;test&quot;;
+
+        printf(&quot;Calling prctl() to set seccomp strict mode...\n&quot;);
+        prctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);
+
+        printf(&quot;Writing to an already open file...\n&quot;);
+        write(output, val, strlen(val)+1);
+
+        printf(&quot;Trying to open file for reading...\n&quot;);
+        int input = open(&quot;output.txt&quot;, O_RDONLY);
+
+        printf(&quot;You will not see this message--the process will be killed first\n&quot;);
+}
+</code></pre>
+<pre><code class="hljs language-bash">sudo gcc seccomp_stric.c -o seccomp_strict 
+./seccomp_strict
+</code></pre>
+<p>open()system call is not allowed by secccomp strict mode </p>
+<p>get the file ro test for seccomp in filter mode </p>
+<pre><code class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;seccomp.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;errno.h&gt;</span></span>
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-comment">/* initialize the libseccomp context */</span>
+    scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_KILL);
+
+    <span class="hljs-comment">/* allow exiting */</span>
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), <span class="hljs-number">0</span>);
+
+    <span class="hljs-comment">/* allow getting the current pid */</span>
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getpid), <span class="hljs-number">0</span>);
+
+    <span class="hljs-comment">/* allow changing data segment size, as required by glibc */</span>
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(brk), <span class="hljs-number">0</span>);
+
+    <span class="hljs-comment">/* allow writing up to 512 bytes to fd 1 */</span>
+    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), <span class="hljs-number">2</span>,
+        SCMP_A0(SCMP_CMP_EQ, <span class="hljs-number">1</span>),
+        SCMP_A2(SCMP_CMP_LE, <span class="hljs-number">512</span>));
+
+    <span class="hljs-comment">/* if writing to any other fd, return -EBADF */</span>
+    seccomp_rule_add(ctx, SCMP_ACT_ERRNO(EBADF), SCMP_SYS(write), <span class="hljs-number">1</span>,
+        SCMP_A0(SCMP_CMP_NE, <span class="hljs-number">1</span>));
+
+    <span class="hljs-comment">/* load and enforce the filters */</span>
+    seccomp_load(ctx);
+    seccomp_release(ctx);
+
+    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;this process is %d\n&quot;</span>, getpid());
+}
+</code></pre>
+<p>we have first initiazed the seccomp in filter mode . previouly have used <code>prctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);</code> to set the seccomp in strict mode . </p>
+<pre><code class="hljs language-bash">sudo gcc seccomp_bpf.c -o seccomp_bpf
+</code></pre>
+<p>install libseccomp-dev </p>
+<pre><code class="hljs language-bash">sudo apt-get install libseccomp-dev
+</code></pre>
+<pre><code class="hljs language-bash">sudo gcc seccomp_bpf.c -o seccomp_bpf -lseccomp
+</code></pre>
+<pre><code class="hljs language-bash">./seccomp_bpf
+</code></pre>
+<p>output </p>
+<pre><code class="hljs language-bash">initiating seccomp ...
+add rule to allow exit_group
+add rule to allow getpid
+add rule to allow brk
+add rule to allow write upto 512 bytes to fd 1
+add rule to allow write to any other fd except 1
+loading seccomp filter ...
+</code></pre>
+<p>inspecting the output one can look here that all the rules added to seccomp BPF folter with a process
+ID since we have added the rule to allow getpid() system call . </p>
+<p>open seccomp_bpf.c and add the following code to the end of the file</p>
+<pre><code class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;unistd.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdint.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdio.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/prctl.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;sys/syscall.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;linux/seccomp.h&gt;</span></span>
+
+<span class="hljs-comment">/* &quot;mov al,42; ret&quot; aka &quot;return 42&quot; */</span>
+<span class="hljs-type">static</span> <span class="hljs-type">const</span> <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> code[] = <span class="hljs-string">&quot;\xb0\x2a\xc3&quot;</span>;
+
+<span class="hljs-type">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span>
+{
+    <span class="hljs-type">int</span> fd[<span class="hljs-number">2</span>], ret;
+
+    <span class="hljs-comment">/* spawn child process, connected by a pipe */</span>
+    pipe(fd);
+    <span class="hljs-keyword">if</span> (fork() == <span class="hljs-number">0</span>) {
+        close(fd[<span class="hljs-number">0</span>]);
+
+        <span class="hljs-comment">/* enter mode 1 seccomp and execute untrusted bytecode */</span>
+        prctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);
+        ret = (*(<span class="hljs-type">uint8_t</span>(*)())code)();
+
+        <span class="hljs-comment">/* send result over pipe, and exit */</span>
+        write(fd[<span class="hljs-number">1</span>], &amp;ret, <span class="hljs-keyword">sizeof</span>(ret));
+        syscall(SYS_exit, <span class="hljs-number">0</span>);
+    } <span class="hljs-keyword">else</span> {
+        close(fd[<span class="hljs-number">1</span>]);
+
+        <span class="hljs-comment">/* read the result from the pipe, and print it */</span>
+        read(fd[<span class="hljs-number">0</span>], &amp;ret, <span class="hljs-keyword">sizeof</span>(ret));
+        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;untrusted bytecode returned %d\n&quot;</span>, ret);
+    }
+}
+</code></pre>
+<pre><code class="hljs language-bsh">$ suod gcc seccomp_bpf.c -o seccomp_bpf2 -lseccomp
+$ ./seccomp_bpf2
+initiating seccomp ...
+add rule to allow exit_group
+add rule to allow getpid
+add rule to allow brk
+add rule to allow write upto 512 bytes to fd 1
+add rule to allow write to any other fd except 1
+loading seccomp filter ...
+this process is -9 
+</code></pre>
+<h2 id="seccomp-in-docker">seccomp in docker</h2>
+<p>step 1. check the  SECCOMP is working and configured in docker daemon</p>
+<pre><code class="hljs language-bash">docker info | grep seccomp
+</code></pre>
+<p>step 2. check the seccomp profile of the container</p>
+<pre><code class="hljs language-bash">docker inspect --format=<span class="hljs-string">&#x27;{{json .HostConfig.SecurityOpt}}&#x27;</span> &lt;container_name&gt;
+</code></pre>
+<p>seccomp-profiles/deny.json</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;defaultAction&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SCMP_ACT_ERRNO&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;architectures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-string">&quot;SCMP_ARCH_X86_64&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-string">&quot;SCMP_ARCH_X86&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-string">&quot;SCMP_ARCH_X32&quot;</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;syscalls&quot;</span> <span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+
+    <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>a docker seccomp profile consists of 3 required entries viz. defaultAction, architectures and syscalls. the possible action of precedence are </p>
+<ul>
+<li>SCMP_ACT_KILL<ul>
+<li>kill with am status of 0x80 + 31(SIGSYS) = 159</li>
+</ul>
+</li>
+<li>SCMP_ACT_TRAP<ul>
+<li>send SIGSYS signal without executing the syscall</li>
+</ul>
+</li>
+<li>SCMP_ACT_ERRNO<ul>
+<li>set erno withou executing the syscall</li>
+</ul>
+</li>
+<li>SCMP_ACT_TRACE<ul>
+<li>invoke a ptrace to make a decision or set errno to Enosys</li>
+</ul>
+</li>
+<li>SCMP_ACT_ALLOW<ul>
+<li>allow the syscall to execute</li>
+</ul>
+</li>
+</ul>
+<pre><code>
+docker run --security-opt seccomp=seccomp-profiles/deny.json -it ubuntu bash
+</code></pre>
+<p>using <code>--security-opt seccomp=seccomp-profiles/deny.json</code> we have set the seccomp profile to the container . 
+notice here that since not even single system call is allwoed , the docker container is not able to run . </p>
+<p>create sc-custom.json</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;defaultAction&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SCMP_ACT_ALLOW&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;architectures&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-string">&quot;SCMP_ARCH_X86_64&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-string">&quot;SCMP_ARCH_X86&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-string">&quot;SCMP_ARCH_X32&quot;</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;syscalls&quot;</span> <span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">&quot;names&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;mkdir&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SCMP_ACT_ALLOW&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-string">&quot;args::[]
+        
+        },
+        {
+            &quot;</span>names<span class="hljs-string">&quot;: &quot;</span>chmod<span class="hljs-string">&quot; ,
+            &quot;</span>action<span class="hljs-string">&quot;: &quot;</span>SCMP_ACT_ERRNO<span class="hljs-string">&quot;,
+            &quot;</span>args<span class="hljs-punctuation">:</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span>
+        <span class="hljs-punctuation">}</span>
+
+    <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>before going to run this commands see what 
+all system call actally take place while hitting mkdir command inside an alphine
+container using strace </p>
+<pre><code class="hljs language-bash">docker run -<span class="hljs-built_in">rm</span> -it --security-opt seccomp=unconfined alphine sh 
+</code></pre>
+<pre><code class="hljs language-bash">apk add strace
+strace <span class="hljs-built_in">mkdir</span> <span class="hljs-built_in">test</span>
+<span class="hljs-built_in">exit</span>
+</code></pre>
+<p>we have installed strace utility inside the container and then run the mkdir command .the system call oberved include  <code>execve </code> , 
+<code>arch_prtctl</code> <code> mprotect</code> <code>brk</code> <code>access</code> <code>openat</code> <code>mkdirat</code> <code>fstat</code> <code>close</code> <code>exit_group</code> . test directory is created inside the container . </p>
+<p>Now run another contaiet with same aphine image with new <code>sc-custom.json</code> seccomp profile . </p>
+<pre><code class="hljs language-bash">docker run -<span class="hljs-built_in">rm</span> -it --security-opt seccomp=sc-custom.json alphine sh 
+</code></pre>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">ls</span> 
+<span class="hljs-built_in">mkdir</span> <span class="hljs-built_in">test</span>
+</code></pre>
+<p>mkdir: can&#39;t create directory &#39;test&#39;: Operation not permitted</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># chmod /etc/</span>
+</code></pre>
+<p>clearly , the seccomp profile attavhed is blocking the mkdir and chmod system call . 
+lets comfirm it with strace utility agin </p>
+<pre><code class="hljs language-bash">apk add strace
+strace <span class="hljs-built_in">mkdir</span> <span class="hljs-built_in">test</span>
+</code></pre>
+<p>as expected the systm call got rejected with <code>Operation not permitted</code> error . since also we have added a deny condition for chmod system call . </p>
+<p>Run a docker container with the same seccomp file with chmpd over file 777 permission </p>
+<pre><code class="hljs language-bash">$ docker run -<span class="hljs-built_in">rm</span> -it --security-opt seccomp=sc-custom.json alphine sh <span class="hljs-built_in">chmod</span> 777 /etc/passwd
+</code></pre>
+<p>this os also denyed by the seccomp profile . </p>
+<p>for more play with <code>default.json</code> seccomp 
+profile available on moby github repo </p>
+<h2 id="app-armor">app armor</h2>
+<p>appArmor is a MAC (Mandatory Access Control) system that is used to restrict the access of a process to the system resources . its implements a task centered policy with task 
+&quot;profile&quot; being created and loaded from user space </p>
+<p>tasks on the syste, that do not have profi;e defined for them run an uncofined state which  is equivalant to standared Linux DAC (Discretionary Access Control) . permissions .</p>
+<p>appArmor works on file paths . it comes as default LSM for ubuntu and SUSE . </p>
+<ol>
+<li>let check our dpcler version and service status</li>
+</ol>
+<pre><code class="hljs language-bash">
+$ docker version
+$ systemctl status docker 
+</code></pre>
+<ol start="2">
+<li>check AppArmor in docker info</li>
+</ol>
+<pre><code class="hljs language-bash">docker info -f <span class="hljs-string">&#x27;{{json .SecurityOptions}}&#x27;</span>
+</code></pre>
+<ol start="3">
+<li>chheck AppArmor status . it might required sudo access</li>
+</ol>
+<pre><code class="hljs language-bash">$ apparmor_status
+$ sudo apparmor_status
+</code></pre>
+<p>this will provide us the infromation about all the profile loaded and the mode of profiles with process </p>
+<p>the apparmor_status and aa-status can used interchangeably . just check if they are available with your system installation or not gernerally they comes in package call 
+<code>apparmor-utils</code> .</p>
+<pre><code class="hljs language-bash">
+$ <span class="hljs-built_in">which</span> apparmor_status
+$ <span class="hljs-built_in">which</span> aa-status
+</code></pre>
+<p>and one can gain insight about the number of profile also </p>
+<pre><code class="hljs language-bash">$ sudp aa-status --<span class="hljs-built_in">help</span> 
+$ sudo aa-status --enabled [No error output means apparmor is enabled]
+$ sudo aa-status --profiles [prints the no of loaded policies ]
+$ sudo aa-status --enforce [prints the no of enforced policies ]
+</code></pre>
+<p>Install an AppArmor Profile generator tool called <code>bane</code></p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Export the sha256sum for verification.</span>
+$ <span class="hljs-built_in">export</span> BANE_SHA256=<span class="hljs-string">&quot;e70b1d67333975eb705b08045de9558483daae05792a1ff28dcec28d4c164386&quot;</span>
+
+<span class="hljs-comment"># Download and check the sha256sum.</span>
+$ curl -fSL <span class="hljs-string">&quot;https://github.com/genuinetools/bane/releases/download/v0.4.4/bane-freebsd-amd64&quot;</span> -o <span class="hljs-string">&quot;/usr/local/bin/bane&quot;</span> \
+    &amp;&amp; <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">${BANE_SHA256}</span>  /usr/local/bin/bane&quot;</span> | <span class="hljs-built_in">sha256sum</span> -c - \
+    &amp;&amp; <span class="hljs-built_in">chmod</span> a+x <span class="hljs-string">&quot;/usr/local/bin/bane&quot;</span>
+
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;bane installed!&quot;</span>
+
+<span class="hljs-comment"># Run it!</span>
+$ bane -h
+</code></pre>
+<p>get the sample TOML file for creation of AppArmor profile from bane Github </p>
+<pre><code class="hljs language-bash">$ sudo curl -o sample.toml https://raw.githubusercontent.com/genuinetools/bane/master/sample.toml
+$ <span class="hljs-built_in">ls</span> 
+</code></pre>
+<p>the parts of the sample.toml file are </p>
+<p>a. <code>name</code> key value pair is the name of the profile .</p>
+<pre><code># name of the profile, we will auto prefix with `docker-`
+# so the final profile name will be `docker-nginx-sample`
+Name = &quot;nginx-sample&quot;
+</code></pre>
+<p>b . <code>Filesystem </code> table with different arrays like ReadOnlyPaths , LogOnWritePaths , WritePaths , ReadPaths , NoAccessPaths , ReadOnlyPaths . </p>
+<pre><code class="hljs language-bash">
+[Filesystem]
+<span class="hljs-comment"># read only paths for the container</span>
+ReadOnlyPaths = [
+    <span class="hljs-string">&quot;/bin/**&quot;</span>,
+    <span class="hljs-string">&quot;/boot/**&quot;</span>,
+    <span class="hljs-string">&quot;/dev/**&quot;</span>,
+    <span class="hljs-string">&quot;/etc/**&quot;</span>,
+    <span class="hljs-string">&quot;/home/**&quot;</span>,
+    <span class="hljs-string">&quot;/lib/**&quot;</span>,
+    <span class="hljs-string">&quot;/lib64/**&quot;</span>,
+    <span class="hljs-string">&quot;/media/**&quot;</span>,
+    <span class="hljs-string">&quot;/mnt/**&quot;</span>,
+    <span class="hljs-string">&quot;/opt/**&quot;</span>,
+    <span class="hljs-string">&quot;/proc/**&quot;</span>,
+    <span class="hljs-string">&quot;/root/**&quot;</span>,
+    <span class="hljs-string">&quot;/sbin/**&quot;</span>,
+    <span class="hljs-string">&quot;/srv/**&quot;</span>,
+    <span class="hljs-string">&quot;/tmp/**&quot;</span>,
+    <span class="hljs-string">&quot;/sys/**&quot;</span>,
+    <span class="hljs-string">&quot;/usr/**&quot;</span>,
+]
+
+<span class="hljs-comment"># paths where you want to log on write</span>
+LogOnWritePaths = [
+    <span class="hljs-string">&quot;/**&quot;</span>
+]
+
+<span class="hljs-comment"># paths where you can write</span>
+WritablePaths = [
+    <span class="hljs-string">&quot;/var/run/nginx.pid&quot;</span>
+]
+
+<span class="hljs-comment"># allowed executable files for the container</span>
+AllowExec = [
+    <span class="hljs-string">&quot;/usr/sbin/nginx&quot;</span>
+]
+
+<span class="hljs-comment"># denied executable files</span>
+DenyExec = [
+    <span class="hljs-string">&quot;/bin/dash&quot;</span>,
+    <span class="hljs-string">&quot;/bin/sh&quot;</span>,
+    <span class="hljs-string">&quot;/usr/bin/top&quot;</span>
+]
+</code></pre>
+<p>C. Capabilties table allow array for allowing Linux capabilities . </p>
+<pre><code class="hljs language-toml"><span class="hljs-comment"># allowed capabilities</span>
+<span class="hljs-section">[Capabilities]</span>
+<span class="hljs-attr">Allow</span> = [
+    <span class="hljs-string">&quot;chown&quot;</span>,
+    <span class="hljs-string">&quot;dac_override&quot;</span>,
+    <span class="hljs-string">&quot;setuid&quot;</span>,
+    <span class="hljs-string">&quot;setgid&quot;</span>,
+    <span class="hljs-string">&quot;net_bind_service&quot;</span>
+]
+
+</code></pre>
+<p>D . Network table with Raw , Packet , Protocols array .</p>
+<pre><code class="hljs language-toml">
+<span class="hljs-section">[Network]</span>
+<span class="hljs-comment"># if you don&#x27;t need to ping in a container, you can probably</span>
+<span class="hljs-comment"># set Raw to false and deny network raw</span>
+<span class="hljs-attr">Raw</span> = <span class="hljs-literal">false</span>
+<span class="hljs-attr">Packet</span> = <span class="hljs-literal">false</span>
+<span class="hljs-attr">Protocols</span> = [
+    <span class="hljs-string">&quot;tcp&quot;</span>,
+    <span class="hljs-string">&quot;udp&quot;</span>,
+    <span class="hljs-string">&quot;icmp&quot;</span>
+]
+</code></pre>
+<p>build the sample file with bane and check apparmor status if this profile gets enforced </p>
+<pre><code class="hljs language-bash">$ sudo bane sample.toml
+$ sudo aa-status | grep docker 
+</code></pre>
+<p>notice that there was already loaded <code>docker-default</code> profile .</p>
+<pre><code class="hljs language-bash">$ sudo <span class="hljs-built_in">ls</span> /etc/apparmor.d/containers/
+docker-ngnix-sample
+</code></pre>
+<pre><code class="hljs language-bash">sudo <span class="hljs-built_in">cat</span> /etc/apparmor.d/containers/docker-nginx-sample
+</code></pre>
+<pre><code class="hljs language-c">    <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;tunables/global&gt;</span></span>
+
+    profile docker-nginx-sample flags=(attach_disconnected,mediate_deleted) {
+      <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;abstractions/base&gt;</span></span>
+      <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;abstractions/nameservice&gt;</span></span>
+      <span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;abstractions/openssl&gt;</span></span>
+
+      /bin<span class="hljs-comment">/** r,
+      /boot/** r,
+      /dev/** r,
+      /etc/** r,
+      /home/** r,
+      /lib/** r,
+      /lib64/** r,
+      /media/** r,
+      /mnt/** r,
+      /opt/** r,
+      /proc/** r,
+      /root/** r,
+      /sbin/** r,
+      /srv/** r,
+      /tmp/** r,
+      /sys/** r,
+      /usr/** r,
+      /var/run/nginx.pid rw,
+      /usr/sbin/nginx ix,
+      deny /bin/dash ix,
+      deny /bin/sh ix,
+      deny /usr/bin/top ix,
+      capability chown,
+      capability dac_override,
+      capability setuid,
+      capability setgid,
+      capability net_bind_service,
+      network raw,
+      network packet,
+      deny network raw,
+      deny network packet,
+      deny network tcp,
+      deny network udp,
+      deny network icmp,
+    }
+
+    .....
+</span>
+</code></pre>
+<p>Apply the above bane generated profile to the container before that lets 
+analyze some commands that we can perfectly run within a container not attached to this profile </p>
+<pre><code class="hljs language-bash">$ docker run -it --<span class="hljs-built_in">rm</span> --name without-aa -p 4444:80 nginx bash 
+<span class="hljs-comment"># sh</span>
+<span class="hljs-comment"># dash</span>
+<span class="hljs-comment"># bash </span>
+<span class="hljs-comment"># exit</span>
+<span class="hljs-comment"># exist </span>
+</code></pre>
+<p>in this ngnix container we are able to run many variants of shell like bash sh and dash without any error </p>
+<p>now attach th profile and try to achive the same </p>
+<pre><code class="hljs language-bash">$ docker run -it --<span class="hljs-built_in">rm</span> --name with-aa --security-opt=<span class="hljs-string">&quot;apparmor:docker-nginx-sample&quot;</span> -p 4444:80  nginx bash 
+</code></pre>
+<p>As expected, the attached AppArmor profile is not allowing us to spawn shells inside the container. This  is how an AppArmor profile can be attached to a Docker container using <code>--security-opt</code> and the different  executables and capabilities can be controlled.  Till now, we have seen that Docker uses many Linux technologies, such as Capabilities,  AppArmor and SecComp for defense. However, AppArmor can protect a Docker Host even  when the other lines of defense such as SecComp and Capabilities are not effective.  Remember that if you are not explicitly defining any AppArmor profile, the <code>default-docker</code>  AppArmor profile will get automatically attached. Until and unless <code>--security-opt  apparmor=unconfined</code> is not present during the container run command execution <code>default-docker</code>
+ apparmor profile will be remain loaded .</p>
+</div><div class="lesson-links"><a href="/containersecurity/lessons/Defending-Containers-and-Containerized-Apps-on-Scale/packetscanner" class="prev">← Previous</a><a href="/containersecurity/lessons/Defending-Containers-and-Containerized-Apps-on-Scale/docker-daemon-sec" class="next">Next →</a></div></div><div class="details-bg"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="154" height="154" viewBox="0 0 154 154"><defs><clipPath id="clip-path"><rect id="Rectangle_2238" data-name="Rectangle 2238" width="154" height="154" transform="translate(9467 350)" fill="#fff" stroke="#707070" stroke-width="1"></rect></clipPath><clipPath id="clip-corner-image-active"><rect width="154" height="154"></rect></clipPath></defs><g id="corner-image-active" clip-path="url(#clip-corner-image-active)"><g id="Corner-image-active-2" data-name="Corner-image-active" transform="translate(-9467 -350)" clip-path="url(#clip-path)"><path id="Subtraction_34" data-name="Subtraction 34" d="M-3857.365,1740.766h0l-7.07-7.07,12.89-12.89v14.142l-5.818,5.818Zm-14.142-14.142h0l-7.071-7.07,27.033-27.033v14.143l-19.96,19.96Zm-14.143-14.143h0l-7.07-7.069,41.175-41.175v14.142Zm-14.142-14.142h0l-7.07-7.069,55.317-55.317v14.142Zm-14.142-14.142h0l-7.07-7.069,69.459-69.459v14.142Zm-14.142-14.142h0l-7.07-7.069,76.739-76.739h6.862v7.28Zm-14.143-14.143h0l-7.07-7.069,62.6-62.6h14.142Zm-14.142-14.142h0l-7.07-7.069,48.454-48.454h14.142Zm-14.142-14.142h0l-7.07-7.069,34.312-34.312h14.142Zm-14.142-14.142h0l-7.07-7.069,20.17-20.17h14.142Zm-14.142-14.142h0l-7.071-7.071,6.027-6.027h14.144l-13.1,13.1Zm367.24-56.114v-.909l.455.455-.453.453Z" transform="translate(13472.546 -1236.766)" fill="var(--corner-fill)"></path></g></g></svg></div></div><h3 class="tweet-head">loading …</h3></div></div><footer class="footer"><ul class="socials"><li class="social"><a href="https://twitter.com/BiradarSangam"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="32" viewBox="0 0 40 32"><defs><clipPath id="clip-twitter-social"><rect width="40" height="32"></rect></clipPath></defs><g id="twitter-social" clip-path="url(#clip-twitter-social)"><g id="Group_269" data-name="Group 269" transform="translate(-230.23 -1140.849)"><path id="Path_419" data-name="Path 419" d="M266.12,1148.861v1.035a23.092,23.092,0,0,1-1.507,8.1,24.08,24.08,0,0,1-4.475,7.381,22.175,22.175,0,0,1-7.306,5.4,24.129,24.129,0,0,1-10,2.07,23.7,23.7,0,0,1-6.667-.945,22.83,22.83,0,0,1-5.936-2.655q.959.091,1.963.09a16.518,16.518,0,0,0,5.434-.9,17.111,17.111,0,0,0,4.749-2.52,8.275,8.275,0,0,1-4.749-1.643,7.8,7.8,0,0,1-2.877-3.983,8.268,8.268,0,0,0,1.507.135,8.58,8.58,0,0,0,2.146-.27,8.16,8.16,0,0,1-5.685-4.344,8.326,8.326,0,0,1-.89-3.578v-.135a7.775,7.775,0,0,0,3.744,1.035,8.183,8.183,0,0,1-2.671-2.9,7.817,7.817,0,0,1-.982-3.848,7.948,7.948,0,0,1,1.1-4.05,23.53,23.53,0,0,0,16.895,8.46,9.221,9.221,0,0,1-.183-1.845,7.787,7.787,0,0,1,1.1-4.05,8.216,8.216,0,0,1,2.991-2.948,7.991,7.991,0,0,1,4.087-1.1,8.184,8.184,0,0,1,5.982,2.566,16.087,16.087,0,0,0,5.205-1.98,7.784,7.784,0,0,1-1.393,2.588,8.4,8.4,0,0,1-2.215,1.913,16.856,16.856,0,0,0,4.749-1.305A17.032,17.032,0,0,1,266.12,1148.861Z" fill="var(--footer-icons)"></path></g></g></svg></a></li><li class="social"><a href="https://github.com/sangam14"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32"><defs><clipPath id="clip-github-social"><rect width="32" height="32"></rect></clipPath></defs><g id="github-social" clip-path="url(#clip-github-social)"><g id="Group_272" data-name="Group 272" transform="translate(13522.5 -6994)"><path id="Subtraction_33" data-name="Subtraction 33" d="M-24967.5,8041a15.9,15.9,0,0,1-11.312-4.688A15.893,15.893,0,0,1-24983.5,8025a15.893,15.893,0,0,1,4.689-11.315A15.894,15.894,0,0,1-24967.5,8009a15.894,15.894,0,0,1,11.313,4.686A15.893,15.893,0,0,1-24951.5,8025a15.893,15.893,0,0,1-4.689,11.313A15.9,15.9,0,0,1-24967.5,8041Zm-3.781-4.571h0v3.918h7.895v-6.665a1.836,1.836,0,0,0-1.2-1.718c5.1-.617,7.467-2.975,7.467-7.424a7.176,7.176,0,0,0-1.637-4.728,6.74,6.74,0,0,0,.275-1.812,4.34,4.34,0,0,0-.52-2.452.574.574,0,0,0-.359-.1c-1.061,0-3.465,1.411-3.936,1.694a16.644,16.644,0,0,0-4.2-.489,16.379,16.379,0,0,0-3.969.445c-.846-.5-2.91-1.649-3.859-1.649a.566.566,0,0,0-.354.095,4.3,4.3,0,0,0-.521,2.452,6.7,6.7,0,0,0,.244,1.718,7.346,7.346,0,0,0-1.6,4.822,7.263,7.263,0,0,0,1.533,4.985c1.193,1.359,3.115,2.165,5.871,2.464a1.826,1.826,0,0,0-1.129,1.693v.5h0l-.006,0a7.121,7.121,0,0,1-2.033.363,2.608,2.608,0,0,1-.965-.158,4.438,4.438,0,0,1-1.836-1.881,2.361,2.361,0,0,0-1.248-1.091,3.472,3.472,0,0,0-1.217-.3.584.584,0,0,0-.545.224.282.282,0,0,0,.027.367,1.875,1.875,0,0,0,.447.307,4.732,4.732,0,0,1,.561.355,10.726,10.726,0,0,1,1.682,2.755c.043.092.078.163.105.217a3.876,3.876,0,0,0,2.42,1.185,6.036,6.036,0,0,0,.607.025c.875,0,1.988-.124,2-.125Z" transform="translate(11461 -1015)" fill="var(--footer-icons)"></path><g id="Ellipse_670" data-name="Ellipse 670" transform="translate(-13522.5 6994)" fill="none" stroke="var(--icons)" stroke-width="1"><circle cx="16" cy="16" r="16" stroke="none"></circle><circle cx="16" cy="16" r="15.5" fill="none"></circle></g></g></g></svg></a></li><li class="social"><a href="https://linkedin.com/in/sanngambiradar"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32"><defs><clipPath id="clip-linkedin-social"><rect width="32" height="32"></rect></clipPath></defs><g id="linkedin-social" clip-path="url(#clip-linkedin-social)"><g id="Group_270" data-name="Group 270" transform="translate(-86.349 -633.073)"><path id="Path_375" data-name="Path 375" d="M115.789,633.073a2.324,2.324,0,0,1,1.682.676,2.194,2.194,0,0,1,.695,1.627V662.8a2.131,2.131,0,0,1-.695,1.609,2.314,2.314,0,0,1-1.646.659H88.69a2.307,2.307,0,0,1-1.646-.659,2.128,2.128,0,0,1-.695-1.609V635.376a2.19,2.19,0,0,1,.695-1.627,2.322,2.322,0,0,1,1.682-.676h27.063Zm-20.224,9.672a2.561,2.561,0,0,0,0-3.584,2.658,2.658,0,0,0-1.938-.712,2.724,2.724,0,0,0-1.957.712,2.371,2.371,0,0,0-.75,1.792,2.4,2.4,0,0,0,.731,1.792,2.605,2.605,0,0,0,1.9.713h.037A2.7,2.7,0,0,0,95.565,642.745ZM96,645.434H91.213V659.88H96Zm17.3,6.144a7.007,7.007,0,0,0-1.573-4.9,5.68,5.68,0,0,0-6.839-.769,5.663,5.663,0,0,0-1.426,1.573v-2.048H98.674q.036.841,0,7.717v6.728h4.791V651.8a3.592,3.592,0,0,1,.146-1.17,2.913,2.913,0,0,1,.878-1.206,2.429,2.429,0,0,1,1.609-.549,2.108,2.108,0,0,1,1.865.914,4.265,4.265,0,0,1,.549,2.341v7.752H113.3Z" fill="var(--footer-icons)"></path></g></g></svg></a></li><li class="social"><div class="terms"><p>Code Samples and Excercises Licensed Under Apache 2.0</p></div><a href="https://visitorbadge.io/status?path=https%3A%2F%2Fkubedaily.com%2Fcontainersecurity%2F"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fkubedaily.com%2Fcontainersecurity%2F&amp;labelColor=%23f47373&amp;countColor=%23697689&amp;style=flat"/></a></li></ul><span><a href="https://github.com/sangam14/containersecurity" data-color-scheme="no-preference: light; light: light_high_contrast; dark: dark_dimmed;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star sangam14/containersecurity on GitHub">Star</a></span></footer></div><script async="" defer="" src="https://a.holt.courses/latest.js" data-hostname="web-dev-v3.holt.courses"></script><noscript><img src="https://a.holt.courses/noscript.gif?hostname=web-dev-v3.holt.courses" alt="" referrerPolicy="no-referrer-when-downgrade"/></noscript></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"post":{"attributes":{"title":" Docker host security configurations ","description":" SecComp and AppArmor "},"html":"\u003ch2 id=\"seccomp-and-apparmor\"\u003eSecComp and AppArmor\u003c/h2\u003e\n\u003cp\u003eDocker works with major Linux MAC technologies such as AppArmor and SELinux.\u003c/p\u003e\n\u003cp\u003eDepending on your Linux distribution, Docker applies a default AppArmor profile to all new containers. According to the Docker documentation, this default profile is “moderately protective while providing wide application compatibility”.\u003c/p\u003e\n\u003cp\u003eDocker also lets you start containers without a policy applied, as well as giving you the ability to customize policies to meet specific requirements. This is also very powerful, but can also be prohibitively complex.\u003c/p\u003e\n\u003ch2 id=\"seccomp\"\u003eseccomp\u003c/h2\u003e\n\u003cp\u003eDocker uses seccomp, in filter mode, to limit the syscalls a container can make to the host’s kernel.\u003c/p\u003e\n\u003cp\u003eAs per the Docker security philosophy, all new containers get a default seccomp profile configured with sensible defaults. This is intended to provide moderate security without impacting application compatibility.\u003c/p\u003e\n\u003cp\u003e\u003cimg src=\"/containersecurity/./images/seccomp.png\" alt=\"\"\u003e\u003c/p\u003e\n\u003cp\u003eAs always, you can customize seccomp profiles, and you can pass a flag to Docker so that containers can be started without a seccomp profile.\u003c/p\u003e\n\u003cp\u003eAs with many of the technologies already mentioned, seccomp is extremely powerful. However, the Linux syscall table is long, and configuring the appropriate seccomp policies can be prohibitively complex.\u003c/p\u003e\n\u003ch1 id=\"concluding-linux-security-technologies\"\u003eConcluding Linux security technologies\u003c/h1\u003e\n\u003cp\u003eDocker supports most of the important Linux security technologies and ships with sensible defaults that add security but aren’t too restrictive. The figure below shows how these technologies form multiple layers of potential security.\u003c/p\u003e\n\u003cp\u003eSome of these technologies can be complicated to customize as they require deep knowledge of how the Linux kernel works. Hopefully, they will get simpler to configure in the future, but for now, the default configurations that ship with Docker might be a good place to start.\u003c/p\u003e\n\u003ch2 id=\"seccomp-exercise-1\"\u003eSecComp Exercise 1\u003c/h2\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003egrep SECCOMP /boot/config-$(\u003cspan class=\"hljs-built_in\"\u003euname\u003c/span\u003e -r)\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eget the fitst test for seccomp in strict mode \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-seccomp_strict.c\"\u003e#include \u0026lt;fcntl.h\u0026gt;\n#include \u0026lt;stdio.h\u0026gt;\n#include \u0026lt;unistd.h\u0026gt;\n#include \u0026lt;string.h\u0026gt;\n#include \u0026lt;linux/seccomp.h\u0026gt;\n#include \u0026lt;sys/prctl.h\u0026gt;\n\n\nint main(int argc, char **argv)\n{\n        int output = open(\u0026quot;output.txt\u0026quot;, O_WRONLY);\n        const char *val = \u0026quot;test\u0026quot;;\n\n        printf(\u0026quot;Calling prctl() to set seccomp strict mode...\\n\u0026quot;);\n        prctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);\n\n        printf(\u0026quot;Writing to an already open file...\\n\u0026quot;);\n        write(output, val, strlen(val)+1);\n\n        printf(\u0026quot;Trying to open file for reading...\\n\u0026quot;);\n        int input = open(\u0026quot;output.txt\u0026quot;, O_RDONLY);\n\n        printf(\u0026quot;You will not see this message--the process will be killed first\\n\u0026quot;);\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003esudo gcc seccomp_stric.c -o seccomp_strict \n./seccomp_strict\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eopen()system call is not allowed by secccomp strict mode \u003c/p\u003e\n\u003cp\u003eget the file ro test for seccomp in filter mode \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-c\"\u003e\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;seccomp.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;unistd.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;stdio.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;errno.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\n\u003cspan class=\"hljs-type\"\u003evoid\u003c/span\u003e \u003cspan class=\"hljs-title function_\"\u003emain\u003c/span\u003e\u003cspan class=\"hljs-params\"\u003e(\u003cspan class=\"hljs-type\"\u003evoid\u003c/span\u003e)\u003c/span\u003e\n{\n    \u003cspan class=\"hljs-comment\"\u003e/* initialize the libseccomp context */\u003c/span\u003e\n    scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_KILL);\n\n    \u003cspan class=\"hljs-comment\"\u003e/* allow exiting */\u003c/span\u003e\n    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), \u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e);\n\n    \u003cspan class=\"hljs-comment\"\u003e/* allow getting the current pid */\u003c/span\u003e\n    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getpid), \u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e);\n\n    \u003cspan class=\"hljs-comment\"\u003e/* allow changing data segment size, as required by glibc */\u003c/span\u003e\n    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(brk), \u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e);\n\n    \u003cspan class=\"hljs-comment\"\u003e/* allow writing up to 512 bytes to fd 1 */\u003c/span\u003e\n    seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), \u003cspan class=\"hljs-number\"\u003e2\u003c/span\u003e,\n        SCMP_A0(SCMP_CMP_EQ, \u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e),\n        SCMP_A2(SCMP_CMP_LE, \u003cspan class=\"hljs-number\"\u003e512\u003c/span\u003e));\n\n    \u003cspan class=\"hljs-comment\"\u003e/* if writing to any other fd, return -EBADF */\u003c/span\u003e\n    seccomp_rule_add(ctx, SCMP_ACT_ERRNO(EBADF), SCMP_SYS(write), \u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e,\n        SCMP_A0(SCMP_CMP_NE, \u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e));\n\n    \u003cspan class=\"hljs-comment\"\u003e/* load and enforce the filters */\u003c/span\u003e\n    seccomp_load(ctx);\n    seccomp_release(ctx);\n\n    \u003cspan class=\"hljs-built_in\"\u003eprintf\u003c/span\u003e(\u003cspan class=\"hljs-string\"\u003e\u0026quot;this process is %d\\n\u0026quot;\u003c/span\u003e, getpid());\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ewe have first initiazed the seccomp in filter mode . previouly have used \u003ccode\u003eprctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);\u003c/code\u003e to set the seccomp in strict mode . \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003esudo gcc seccomp_bpf.c -o seccomp_bpf\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003einstall libseccomp-dev \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003esudo apt-get install libseccomp-dev\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003esudo gcc seccomp_bpf.c -o seccomp_bpf -lseccomp\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e./seccomp_bpf\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eoutput \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003einitiating seccomp ...\nadd rule to allow exit_group\nadd rule to allow getpid\nadd rule to allow brk\nadd rule to allow write upto 512 bytes to fd 1\nadd rule to allow write to any other fd except 1\nloading seccomp filter ...\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003einspecting the output one can look here that all the rules added to seccomp BPF folter with a process\nID since we have added the rule to allow getpid() system call . \u003c/p\u003e\n\u003cp\u003eopen seccomp_bpf.c and add the following code to the end of the file\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-c\"\u003e\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;unistd.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;stdint.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;stdio.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;sys/prctl.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;sys/syscall.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;linux/seccomp.h\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e/* \u0026quot;mov al,42; ret\u0026quot; aka \u0026quot;return 42\u0026quot; */\u003c/span\u003e\n\u003cspan class=\"hljs-type\"\u003estatic\u003c/span\u003e \u003cspan class=\"hljs-type\"\u003econst\u003c/span\u003e \u003cspan class=\"hljs-type\"\u003eunsigned\u003c/span\u003e \u003cspan class=\"hljs-type\"\u003echar\u003c/span\u003e code[] = \u003cspan class=\"hljs-string\"\u003e\u0026quot;\\xb0\\x2a\\xc3\u0026quot;\u003c/span\u003e;\n\n\u003cspan class=\"hljs-type\"\u003evoid\u003c/span\u003e \u003cspan class=\"hljs-title function_\"\u003emain\u003c/span\u003e\u003cspan class=\"hljs-params\"\u003e(\u003cspan class=\"hljs-type\"\u003evoid\u003c/span\u003e)\u003c/span\u003e\n{\n    \u003cspan class=\"hljs-type\"\u003eint\u003c/span\u003e fd[\u003cspan class=\"hljs-number\"\u003e2\u003c/span\u003e], ret;\n\n    \u003cspan class=\"hljs-comment\"\u003e/* spawn child process, connected by a pipe */\u003c/span\u003e\n    pipe(fd);\n    \u003cspan class=\"hljs-keyword\"\u003eif\u003c/span\u003e (fork() == \u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e) {\n        close(fd[\u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e]);\n\n        \u003cspan class=\"hljs-comment\"\u003e/* enter mode 1 seccomp and execute untrusted bytecode */\u003c/span\u003e\n        prctl(PR_SET_SECCOMP, SECCOMP_MODE_STRICT);\n        ret = (*(\u003cspan class=\"hljs-type\"\u003euint8_t\u003c/span\u003e(*)())code)();\n\n        \u003cspan class=\"hljs-comment\"\u003e/* send result over pipe, and exit */\u003c/span\u003e\n        write(fd[\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e], \u0026amp;ret, \u003cspan class=\"hljs-keyword\"\u003esizeof\u003c/span\u003e(ret));\n        syscall(SYS_exit, \u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e);\n    } \u003cspan class=\"hljs-keyword\"\u003eelse\u003c/span\u003e {\n        close(fd[\u003cspan class=\"hljs-number\"\u003e1\u003c/span\u003e]);\n\n        \u003cspan class=\"hljs-comment\"\u003e/* read the result from the pipe, and print it */\u003c/span\u003e\n        read(fd[\u003cspan class=\"hljs-number\"\u003e0\u003c/span\u003e], \u0026amp;ret, \u003cspan class=\"hljs-keyword\"\u003esizeof\u003c/span\u003e(ret));\n        \u003cspan class=\"hljs-built_in\"\u003eprintf\u003c/span\u003e(\u003cspan class=\"hljs-string\"\u003e\u0026quot;untrusted bytecode returned %d\\n\u0026quot;\u003c/span\u003e, ret);\n    }\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bsh\"\u003e$ suod gcc seccomp_bpf.c -o seccomp_bpf2 -lseccomp\n$ ./seccomp_bpf2\ninitiating seccomp ...\nadd rule to allow exit_group\nadd rule to allow getpid\nadd rule to allow brk\nadd rule to allow write upto 512 bytes to fd 1\nadd rule to allow write to any other fd except 1\nloading seccomp filter ...\nthis process is -9 \n\u003c/code\u003e\u003c/pre\u003e\n\u003ch2 id=\"seccomp-in-docker\"\u003eseccomp in docker\u003c/h2\u003e\n\u003cp\u003estep 1. check the  SECCOMP is working and configured in docker daemon\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker info | grep seccomp\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003estep 2. check the seccomp profile of the container\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker inspect --format=\u003cspan class=\"hljs-string\"\u003e\u0026#x27;{{json .HostConfig.SecurityOpt}}\u0026#x27;\u003c/span\u003e \u0026lt;container_name\u0026gt;\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eseccomp-profiles/deny.json\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-json\"\u003e\u003cspan class=\"hljs-punctuation\"\u003e{\u003c/span\u003e\n    \u003cspan class=\"hljs-attr\"\u003e\u0026quot;defaultAction\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ACT_ERRNO\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n    \u003cspan class=\"hljs-attr\"\u003e\u0026quot;architectures\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-punctuation\"\u003e[\u003c/span\u003e\n        \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ARCH_X86_64\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n        \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ARCH_X86\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n        \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ARCH_X32\u0026quot;\u003c/span\u003e\n    \u003cspan class=\"hljs-punctuation\"\u003e]\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n    \u003cspan class=\"hljs-attr\"\u003e\u0026quot;syscalls\u0026quot;\u003c/span\u003e \u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-punctuation\"\u003e[\u003c/span\u003e\n\n    \u003cspan class=\"hljs-punctuation\"\u003e]\u003c/span\u003e\n\u003cspan class=\"hljs-punctuation\"\u003e}\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ea docker seccomp profile consists of 3 required entries viz. defaultAction, architectures and syscalls. the possible action of precedence are \u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eSCMP_ACT_KILL\u003cul\u003e\n\u003cli\u003ekill with am status of 0x80 + 31(SIGSYS) = 159\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003eSCMP_ACT_TRAP\u003cul\u003e\n\u003cli\u003esend SIGSYS signal without executing the syscall\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003eSCMP_ACT_ERRNO\u003cul\u003e\n\u003cli\u003eset erno withou executing the syscall\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003eSCMP_ACT_TRACE\u003cul\u003e\n\u003cli\u003einvoke a ptrace to make a decision or set errno to Enosys\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003eSCMP_ACT_ALLOW\u003cul\u003e\n\u003cli\u003eallow the syscall to execute\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode\u003e\ndocker run --security-opt seccomp=seccomp-profiles/deny.json -it ubuntu bash\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eusing \u003ccode\u003e--security-opt seccomp=seccomp-profiles/deny.json\u003c/code\u003e we have set the seccomp profile to the container . \nnotice here that since not even single system call is allwoed , the docker container is not able to run . \u003c/p\u003e\n\u003cp\u003ecreate sc-custom.json\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-json\"\u003e\u003cspan class=\"hljs-punctuation\"\u003e{\u003c/span\u003e\n    \u003cspan class=\"hljs-attr\"\u003e\u0026quot;defaultAction\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ACT_ALLOW\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n    \u003cspan class=\"hljs-attr\"\u003e\u0026quot;architectures\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-punctuation\"\u003e[\u003c/span\u003e\n        \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ARCH_X86_64\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n        \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ARCH_X86\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n        \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ARCH_X32\u0026quot;\u003c/span\u003e\n    \u003cspan class=\"hljs-punctuation\"\u003e]\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n    \u003cspan class=\"hljs-attr\"\u003e\u0026quot;syscalls\u0026quot;\u003c/span\u003e \u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-punctuation\"\u003e[\u003c/span\u003e\n        \u003cspan class=\"hljs-punctuation\"\u003e{\u003c/span\u003e\n            \u003cspan class=\"hljs-attr\"\u003e\u0026quot;names\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e\u003cspan class=\"hljs-string\"\u003e\u0026quot;mkdir\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n            \u003cspan class=\"hljs-attr\"\u003e\u0026quot;action\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026quot;SCMP_ACT_ALLOW\u0026quot;\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e,\u003c/span\u003e\n            \u003cspan class=\"hljs-string\"\u003e\u0026quot;args::[]\n        \n        },\n        {\n            \u0026quot;\u003c/span\u003enames\u003cspan class=\"hljs-string\"\u003e\u0026quot;: \u0026quot;\u003c/span\u003echmod\u003cspan class=\"hljs-string\"\u003e\u0026quot; ,\n            \u0026quot;\u003c/span\u003eaction\u003cspan class=\"hljs-string\"\u003e\u0026quot;: \u0026quot;\u003c/span\u003eSCMP_ACT_ERRNO\u003cspan class=\"hljs-string\"\u003e\u0026quot;,\n            \u0026quot;\u003c/span\u003eargs\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e:\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e[\u003c/span\u003e\u003cspan class=\"hljs-punctuation\"\u003e]\u003c/span\u003e\n        \u003cspan class=\"hljs-punctuation\"\u003e}\u003c/span\u003e\n\n    \u003cspan class=\"hljs-punctuation\"\u003e]\u003c/span\u003e\n\u003cspan class=\"hljs-punctuation\"\u003e}\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ebefore going to run this commands see what \nall system call actally take place while hitting mkdir command inside an alphine\ncontainer using strace \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker run -\u003cspan class=\"hljs-built_in\"\u003erm\u003c/span\u003e -it --security-opt seccomp=unconfined alphine sh \n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003eapk add strace\nstrace \u003cspan class=\"hljs-built_in\"\u003emkdir\u003c/span\u003e \u003cspan class=\"hljs-built_in\"\u003etest\u003c/span\u003e\n\u003cspan class=\"hljs-built_in\"\u003eexit\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ewe have installed strace utility inside the container and then run the mkdir command .the system call oberved include  \u003ccode\u003eexecve \u003c/code\u003e , \n\u003ccode\u003earch_prtctl\u003c/code\u003e \u003ccode\u003e mprotect\u003c/code\u003e \u003ccode\u003ebrk\u003c/code\u003e \u003ccode\u003eaccess\u003c/code\u003e \u003ccode\u003eopenat\u003c/code\u003e \u003ccode\u003emkdirat\u003c/code\u003e \u003ccode\u003efstat\u003c/code\u003e \u003ccode\u003eclose\u003c/code\u003e \u003ccode\u003eexit_group\u003c/code\u003e . test directory is created inside the container . \u003c/p\u003e\n\u003cp\u003eNow run another contaiet with same aphine image with new \u003ccode\u003esc-custom.json\u003c/code\u003e seccomp profile . \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker run -\u003cspan class=\"hljs-built_in\"\u003erm\u003c/span\u003e -it --security-opt seccomp=sc-custom.json alphine sh \n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\u003cspan class=\"hljs-built_in\"\u003els\u003c/span\u003e \n\u003cspan class=\"hljs-built_in\"\u003emkdir\u003c/span\u003e \u003cspan class=\"hljs-built_in\"\u003etest\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003emkdir: can\u0026#39;t create directory \u0026#39;test\u0026#39;: Operation not permitted\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\u003cspan class=\"hljs-comment\"\u003e# chmod /etc/\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eclearly , the seccomp profile attavhed is blocking the mkdir and chmod system call . \nlets comfirm it with strace utility agin \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003eapk add strace\nstrace \u003cspan class=\"hljs-built_in\"\u003emkdir\u003c/span\u003e \u003cspan class=\"hljs-built_in\"\u003etest\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eas expected the systm call got rejected with \u003ccode\u003eOperation not permitted\u003c/code\u003e error . since also we have added a deny condition for chmod system call . \u003c/p\u003e\n\u003cp\u003eRun a docker container with the same seccomp file with chmpd over file 777 permission \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ docker run -\u003cspan class=\"hljs-built_in\"\u003erm\u003c/span\u003e -it --security-opt seccomp=sc-custom.json alphine sh \u003cspan class=\"hljs-built_in\"\u003echmod\u003c/span\u003e 777 /etc/passwd\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ethis os also denyed by the seccomp profile . \u003c/p\u003e\n\u003cp\u003efor more play with \u003ccode\u003edefault.json\u003c/code\u003e seccomp \nprofile available on moby github repo \u003c/p\u003e\n\u003ch2 id=\"app-armor\"\u003eapp armor\u003c/h2\u003e\n\u003cp\u003eappArmor is a MAC (Mandatory Access Control) system that is used to restrict the access of a process to the system resources . its implements a task centered policy with task \n\u0026quot;profile\u0026quot; being created and loaded from user space \u003c/p\u003e\n\u003cp\u003etasks on the syste, that do not have profi;e defined for them run an uncofined state which  is equivalant to standared Linux DAC (Discretionary Access Control) . permissions .\u003c/p\u003e\n\u003cp\u003eappArmor works on file paths . it comes as default LSM for ubuntu and SUSE . \u003c/p\u003e\n\u003col\u003e\n\u003cli\u003elet check our dpcler version and service status\u003c/li\u003e\n\u003c/ol\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\n$ docker version\n$ systemctl status docker \n\u003c/code\u003e\u003c/pre\u003e\n\u003col start=\"2\"\u003e\n\u003cli\u003echeck AppArmor in docker info\u003c/li\u003e\n\u003c/ol\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker info -f \u003cspan class=\"hljs-string\"\u003e\u0026#x27;{{json .SecurityOptions}}\u0026#x27;\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003col start=\"3\"\u003e\n\u003cli\u003echheck AppArmor status . it might required sudo access\u003c/li\u003e\n\u003c/ol\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ apparmor_status\n$ sudo apparmor_status\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ethis will provide us the infromation about all the profile loaded and the mode of profiles with process \u003c/p\u003e\n\u003cp\u003ethe apparmor_status and aa-status can used interchangeably . just check if they are available with your system installation or not gernerally they comes in package call \n\u003ccode\u003eapparmor-utils\u003c/code\u003e .\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\n$ \u003cspan class=\"hljs-built_in\"\u003ewhich\u003c/span\u003e apparmor_status\n$ \u003cspan class=\"hljs-built_in\"\u003ewhich\u003c/span\u003e aa-status\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eand one can gain insight about the number of profile also \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ sudp aa-status --\u003cspan class=\"hljs-built_in\"\u003ehelp\u003c/span\u003e \n$ sudo aa-status --enabled [No error output means apparmor is enabled]\n$ sudo aa-status --profiles [prints the no of loaded policies ]\n$ sudo aa-status --enforce [prints the no of enforced policies ]\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eInstall an AppArmor Profile generator tool called \u003ccode\u003ebane\u003c/code\u003e\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\u003cspan class=\"hljs-comment\"\u003e# Export the sha256sum for verification.\u003c/span\u003e\n$ \u003cspan class=\"hljs-built_in\"\u003eexport\u003c/span\u003e BANE_SHA256=\u003cspan class=\"hljs-string\"\u003e\u0026quot;e70b1d67333975eb705b08045de9558483daae05792a1ff28dcec28d4c164386\u0026quot;\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# Download and check the sha256sum.\u003c/span\u003e\n$ curl -fSL \u003cspan class=\"hljs-string\"\u003e\u0026quot;https://github.com/genuinetools/bane/releases/download/v0.4.4/bane-freebsd-amd64\u0026quot;\u003c/span\u003e -o \u003cspan class=\"hljs-string\"\u003e\u0026quot;/usr/local/bin/bane\u0026quot;\u003c/span\u003e \\\n    \u0026amp;\u0026amp; \u003cspan class=\"hljs-built_in\"\u003eecho\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026quot;\u003cspan class=\"hljs-variable\"\u003e${BANE_SHA256}\u003c/span\u003e  /usr/local/bin/bane\u0026quot;\u003c/span\u003e | \u003cspan class=\"hljs-built_in\"\u003esha256sum\u003c/span\u003e -c - \\\n    \u0026amp;\u0026amp; \u003cspan class=\"hljs-built_in\"\u003echmod\u003c/span\u003e a+x \u003cspan class=\"hljs-string\"\u003e\u0026quot;/usr/local/bin/bane\u0026quot;\u003c/span\u003e\n\n$ \u003cspan class=\"hljs-built_in\"\u003eecho\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026quot;bane installed!\u0026quot;\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# Run it!\u003c/span\u003e\n$ bane -h\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eget the sample TOML file for creation of AppArmor profile from bane Github \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ sudo curl -o sample.toml https://raw.githubusercontent.com/genuinetools/bane/master/sample.toml\n$ \u003cspan class=\"hljs-built_in\"\u003els\u003c/span\u003e \n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ethe parts of the sample.toml file are \u003c/p\u003e\n\u003cp\u003ea. \u003ccode\u003ename\u003c/code\u003e key value pair is the name of the profile .\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e# name of the profile, we will auto prefix with `docker-`\n# so the final profile name will be `docker-nginx-sample`\nName = \u0026quot;nginx-sample\u0026quot;\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eb . \u003ccode\u003eFilesystem \u003c/code\u003e table with different arrays like ReadOnlyPaths , LogOnWritePaths , WritePaths , ReadPaths , NoAccessPaths , ReadOnlyPaths . \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e\n[Filesystem]\n\u003cspan class=\"hljs-comment\"\u003e# read only paths for the container\u003c/span\u003e\nReadOnlyPaths = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/bin/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/boot/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/dev/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/etc/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/home/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/lib/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/lib64/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/media/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/mnt/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/opt/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/proc/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/root/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/sbin/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/srv/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/tmp/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/sys/**\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/usr/**\u0026quot;\u003c/span\u003e,\n]\n\n\u003cspan class=\"hljs-comment\"\u003e# paths where you want to log on write\u003c/span\u003e\nLogOnWritePaths = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/**\u0026quot;\u003c/span\u003e\n]\n\n\u003cspan class=\"hljs-comment\"\u003e# paths where you can write\u003c/span\u003e\nWritablePaths = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/var/run/nginx.pid\u0026quot;\u003c/span\u003e\n]\n\n\u003cspan class=\"hljs-comment\"\u003e# allowed executable files for the container\u003c/span\u003e\nAllowExec = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/usr/sbin/nginx\u0026quot;\u003c/span\u003e\n]\n\n\u003cspan class=\"hljs-comment\"\u003e# denied executable files\u003c/span\u003e\nDenyExec = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/bin/dash\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/bin/sh\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;/usr/bin/top\u0026quot;\u003c/span\u003e\n]\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eC. Capabilties table allow array for allowing Linux capabilities . \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-toml\"\u003e\u003cspan class=\"hljs-comment\"\u003e# allowed capabilities\u003c/span\u003e\n\u003cspan class=\"hljs-section\"\u003e[Capabilities]\u003c/span\u003e\n\u003cspan class=\"hljs-attr\"\u003eAllow\u003c/span\u003e = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;chown\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;dac_override\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;setuid\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;setgid\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;net_bind_service\u0026quot;\u003c/span\u003e\n]\n\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eD . Network table with Raw , Packet , Protocols array .\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-toml\"\u003e\n\u003cspan class=\"hljs-section\"\u003e[Network]\u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# if you don\u0026#x27;t need to ping in a container, you can probably\u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# set Raw to false and deny network raw\u003c/span\u003e\n\u003cspan class=\"hljs-attr\"\u003eRaw\u003c/span\u003e = \u003cspan class=\"hljs-literal\"\u003efalse\u003c/span\u003e\n\u003cspan class=\"hljs-attr\"\u003ePacket\u003c/span\u003e = \u003cspan class=\"hljs-literal\"\u003efalse\u003c/span\u003e\n\u003cspan class=\"hljs-attr\"\u003eProtocols\u003c/span\u003e = [\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;tcp\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;udp\u0026quot;\u003c/span\u003e,\n    \u003cspan class=\"hljs-string\"\u003e\u0026quot;icmp\u0026quot;\u003c/span\u003e\n]\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ebuild the sample file with bane and check apparmor status if this profile gets enforced \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ sudo bane sample.toml\n$ sudo aa-status | grep docker \n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003enotice that there was already loaded \u003ccode\u003edocker-default\u003c/code\u003e profile .\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ sudo \u003cspan class=\"hljs-built_in\"\u003els\u003c/span\u003e /etc/apparmor.d/containers/\ndocker-ngnix-sample\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003esudo \u003cspan class=\"hljs-built_in\"\u003ecat\u003c/span\u003e /etc/apparmor.d/containers/docker-nginx-sample\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-c\"\u003e    \u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;tunables/global\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\n    profile docker-nginx-sample flags=(attach_disconnected,mediate_deleted) {\n      \u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;abstractions/base\u0026gt;\u003c/span\u003e\u003c/span\u003e\n      \u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;abstractions/nameservice\u0026gt;\u003c/span\u003e\u003c/span\u003e\n      \u003cspan class=\"hljs-meta\"\u003e#\u003cspan class=\"hljs-keyword\"\u003einclude\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026lt;abstractions/openssl\u0026gt;\u003c/span\u003e\u003c/span\u003e\n\n      /bin\u003cspan class=\"hljs-comment\"\u003e/** r,\n      /boot/** r,\n      /dev/** r,\n      /etc/** r,\n      /home/** r,\n      /lib/** r,\n      /lib64/** r,\n      /media/** r,\n      /mnt/** r,\n      /opt/** r,\n      /proc/** r,\n      /root/** r,\n      /sbin/** r,\n      /srv/** r,\n      /tmp/** r,\n      /sys/** r,\n      /usr/** r,\n      /var/run/nginx.pid rw,\n      /usr/sbin/nginx ix,\n      deny /bin/dash ix,\n      deny /bin/sh ix,\n      deny /usr/bin/top ix,\n      capability chown,\n      capability dac_override,\n      capability setuid,\n      capability setgid,\n      capability net_bind_service,\n      network raw,\n      network packet,\n      deny network raw,\n      deny network packet,\n      deny network tcp,\n      deny network udp,\n      deny network icmp,\n    }\n\n    .....\n\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eApply the above bane generated profile to the container before that lets \nanalyze some commands that we can perfectly run within a container not attached to this profile \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ docker run -it --\u003cspan class=\"hljs-built_in\"\u003erm\u003c/span\u003e --name without-aa -p 4444:80 nginx bash \n\u003cspan class=\"hljs-comment\"\u003e# sh\u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# dash\u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# bash \u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# exit\u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# exist \u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003ein this ngnix container we are able to run many variants of shell like bash sh and dash without any error \u003c/p\u003e\n\u003cp\u003enow attach th profile and try to achive the same \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ docker run -it --\u003cspan class=\"hljs-built_in\"\u003erm\u003c/span\u003e --name with-aa --security-opt=\u003cspan class=\"hljs-string\"\u003e\u0026quot;apparmor:docker-nginx-sample\u0026quot;\u003c/span\u003e -p 4444:80  nginx bash \n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eAs expected, the attached AppArmor profile is not allowing us to spawn shells inside the container. This  is how an AppArmor profile can be attached to a Docker container using \u003ccode\u003e--security-opt\u003c/code\u003e and the different  executables and capabilities can be controlled.  Till now, we have seen that Docker uses many Linux technologies, such as Capabilities,  AppArmor and SecComp for defense. However, AppArmor can protect a Docker Host even  when the other lines of defense such as SecComp and Capabilities are not effective.  Remember that if you are not explicitly defining any AppArmor profile, the \u003ccode\u003edefault-docker\u003c/code\u003e  AppArmor profile will get automatically attached. Until and unless \u003ccode\u003e--security-opt  apparmor=unconfined\u003c/code\u003e is not present during the container run command execution \u003ccode\u003edefault-docker\u003c/code\u003e\n apparmor profile will be remain loaded .\u003c/p\u003e\n","slug":"SecComp-AppArmor","title":" Docker host security configurations ","section":"Defending Containers and Containerized Apps on Scale","icon":"book","filePath":"/home/runner/work/containersecurity/containersecurity/lessons/03-Defending-Containers-and-Containerized-Apps-on-Scale/G-SecComp-AppArmor.md","nextSlug":"/containersecurity/lessons/Defending-Containers-and-Containerized-Apps-on-Scale/docker-daemon-sec","prevSlug":"/containersecurity/lessons/Defending-Containers-and-Containerized-Apps-on-Scale/packetscanner"}},"__N_SSG":true},"page":"/lessons/[section]/[slug]","query":{"section":"Defending-Containers-and-Containerized-Apps-on-Scale","slug":"SecComp-AppArmor"},"buildId":"UBfITahn1ykxbPLW13lbA","assetPrefix":"/containersecurity","isFallback":false,"gsp":true,"scriptLoader":[]}</script></body></html>

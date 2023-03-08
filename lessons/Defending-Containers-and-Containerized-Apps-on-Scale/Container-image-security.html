@@ -1,0 +1,232 @@
+<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width"/><meta charSet="utf-8"/><link rel="apple-touch-icon" sizes="180x180" href="/containersecurity/images/apple-touch-icon.png"/><link rel="icon" type="image/png" sizes="32x32" href="/containersecurity/images/favicon-32x32.png"/><link rel="icon" type="image/png" sizes="16x16" href="/containersecurity/images/favicon-16x16.png"/><link rel="icon" type="image/png" sizes="16x16" href="/containersecurity/images/favicon-16x16.png"/><link rel="icon" type="image/x-icon" href="/containersecurity/images/favicon.ico"/><title>Container Image Security  – Container Security</title><meta name="description" content="learn Container Security "/><meta name="keywords" content="web dev,web developer,css,javascript,html,visual studio code,learn to code"/><meta name="og:description" content="learn Container Security "/><meta name="og:title" content="Container Image Security  – Container Security"/><meta name="og:image" content="/containersecurity/images/social-share-cover.jpg"/><meta name="twitter:card" content="summary_large_image"/><meta name="next-head-count" content="14"/><link rel="preload" href="/containersecurity/_next/static/css/872f06f7d8ead724.css" as="style"/><link rel="stylesheet" href="/containersecurity/_next/static/css/872f06f7d8ead724.css" data-n-g=""/><noscript data-n-css=""></noscript><script defer="" nomodule="" src="/containersecurity/_next/static/chunks/polyfills-5cd94c89d3acac5f.js"></script><script src="https://storage.googleapis.com/app.klipse.tech/plugin_prod/js/klipse_plugin.min.js" defer="" data-nscript="beforeInteractive"></script><script src="/containersecurity/_next/static/chunks/webpack-1f5264de0e9b401f.js" defer=""></script><script src="/containersecurity/_next/static/chunks/framework-fc97f3f1282ce3ed.js" defer=""></script><script src="/containersecurity/_next/static/chunks/main-bc5c9816ce0cf4e6.js" defer=""></script><script src="/containersecurity/_next/static/chunks/pages/_app-23a08418d481e3ae.js" defer=""></script><script src="/containersecurity/_next/static/chunks/422-97d050c6a559f504.js" defer=""></script><script src="/containersecurity/_next/static/chunks/pages/lessons/%5Bsection%5D/%5Bslug%5D-4905e3009a5c73a6.js" defer=""></script><script src="/containersecurity/_next/static/UBfITahn1ykxbPLW13lbA/_buildManifest.js" defer=""></script><script src="/containersecurity/_next/static/UBfITahn1ykxbPLW13lbA/_ssgManifest.js" defer=""></script><script src="/containersecurity/_next/static/UBfITahn1ykxbPLW13lbA/_middlewareManifest.js" defer=""></script></head><body><div id="__next"><div class="course-app"><header class="navbar"><h1 class="navbar-brand"><a href="/containersecurity">Container Security</a></h1><div class="navbar-info"><a href="https://discord.com/invite/9ERSnT7" class="cta-btn">Join CloudNativeFolks Community</a></div></header><div class="content-container"><div class="main"><div class="lesson-container"><div class="lesson"><div class="lesson-content"><h2 id="container-image-security">Container Image Security</h2>
+<ul>
+<li>Building secure container images</li>
+</ul>
+<h2 id="choosing-base-images">Choosing base images</h2>
+<h1 id="alpine">Alpine</h1>
+<ul>
+<li>Pros<ul>
+<li>very small images: the community pays a lot attention on minimizing image sizes</li>
+<li>minimum functionality: only absolutely necessary packages contained</li>
+<li>lightweight init system: like Gentoo, Alpine uses OpenRC, a lightweight alternative to systemd</li>
+<li>musl performance: for some cases, <a href="https://musl.libc.org">musl libc</a> can be more performant than <a href="https://www.gnu.org/software/libc/">glibc</a></li>
+</ul>
+</li>
+<li>Cons <ul>
+<li>rather Poor Documentation </li>
+<li>Small team : Currently there are  <a href="https://wiki.alpinelinux.org/wiki/Alpine_Linux:Developers">3 developer listed </a> as the alpine linux team </li>
+<li>possible incompatibilities: musl libc may cause problems with some C-based plugins and adjustments may be necessary if you compile software yourself</li>
+</ul>
+</li>
+</ul>
+<h1 id="debian">Debian</h1>
+<ul>
+<li><p>Pro:</p>
+<ul>
+<li>small images: the size of slimmed down Debian images (such as minideb by Bitnami) is almost on par with Alpine (e.g. m<a href="https://github.com/bitnami/minideb">minideb</a>  + Python is <a href="https://dzone.com/articles/minideb-a-minimalist-debian-based-docker-image">just 7 MB larger than Alpine + Python</a>)</li>
+<li>lots of packages: there&#39;s hardly any software for Linux which hasn&#39;t been packaged for Debian</li>
+<li>well tested: due to its popularity, Debian is used widely and issues are more likely to be found</li>
+<li>comprehensive documentation; also, the community produced a big amount of additional documentations and tutorials</li>
+<li>more security reviews: again, due to its larger community, Debian gets more attention and its more likely that    vulnerabilities are discovered, e.g in glibc versus in musl libc (assumption). Debian also has a <a href="https://www.debian.org/security/">security audit team</a>, which proactively looks for security issues.</li>
+<li>provenance: validating authenticity of packages is possible, e.g. with debsigs / dpkgsig</li>
+</ul>
+</li>
+<li><p>Con:</p>
+<ul>
+<li>slightly larger attack surface: minideb consists of about 35 packages (such as bash, grep, hostname, mount …) due to apt depending on it</li>
+<li>more false positives: scanners may report more false positives you need to look at</li>
+</ul>
+</li>
+</ul>
+<h1 id="distroless-images">Distroless images</h1>
+<p>simple distroless Golang Example </p>
+<pre><code class="hljs language-go"><span class="hljs-keyword">package</span> main
+
+<span class="hljs-keyword">import</span> <span class="hljs-string">&quot;fmt&quot;</span>
+
+<span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span> {
+    fmt.Println(<span class="hljs-string">&quot;Hello, world!&quot;</span>)
+}
+</code></pre>
+<pre><code class="hljs language-Dockerfile"><span class="hljs-keyword">FROM</span> golang:<span class="hljs-number">1.18</span> as build
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /go/src/app</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . .</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> go mod download</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> go vet -v</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> go <span class="hljs-built_in">test</span> -v</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> CGO_ENABLED=0 go build -o /go/bin/app</span>
+<span class="hljs-keyword">FROM</span> gcr.io/distroless/static-debian11
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=build /go/bin/app /</span>
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;/app&quot;</span>]</span>
+</code></pre>
+<ul>
+<li><p>Distroless 2.0 project - uses Alpine as a minimalistic &amp; secure base image, and with the help of two tools, apko and melange, allows to build an application-tailored image containing only (mostly?) the necessary bits. </p>
+</li>
+<li><p>What is apko ?</p>
+<ul>
+<li>Declarative OCI image builder tool based on apk </li>
+<li>Images are defined in YAML files  </li>
+<li>Build are fully reproducible </li>
+<li>Automatically generates SBOMs for every imahes </li>
+<li>Platform-agnostic buids via Docker + apko images</li>
+</ul>
+</li>
+<li><p>example of apko.yaml file</p>
+</li>
+</ul>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">contents:</span>
+  <span class="hljs-attr">repositories:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-string">https://dl-cdn.alpinelinux.org/alpine/edge/main</span>
+  <span class="hljs-attr">packages:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-string">alpine-base</span>
+<span class="hljs-attr">entrypoint:</span>
+  <span class="hljs-attr">command:</span> <span class="hljs-string">/bin/sh</span> <span class="hljs-string">-l</span>
+<span class="hljs-comment"># optional environment configuration</span>
+<span class="hljs-attr">environment:</span>
+  <span class="hljs-attr">PATH:</span> <span class="hljs-string">/usr/sbin:/sbin:/usr/bin:/bin</span>
+</code></pre>
+<p>Buiding the images with apko via Docker </p>
+<pre><code class="hljs language-bash">docker run -v <span class="hljs-string">&quot;<span class="hljs-variable">$PWD</span>&quot;</span>:/work cgr.dev/chainguard/apko build examples/alpine-base.yaml apko-alpine:edge apko-alpine.tar
+</code></pre>
+<p>test the image with docker </p>
+<pre><code class="hljs language-bash">$ docker load &lt; alpine.tar
+$ docker run -it apko-alpine:<span class="hljs-built_in">test</span> 
+</code></pre>
+<ul>
+<li><p>Why apko ?</p>
+<ul>
+<li>Introduced by alphine , it used a different methodology to handle package management </li>
+<li>Package Installation or removal is done as a side effect of modifyinh the system state </li>
+<li>This creates the ideal conditions for reproducible and declaratve pipelines</li>
+</ul>
+</li>
+<li><p>where do package come from ?</p>
+<ul>
+<li>for alphine-base images , use Alphine apks found at pkgs.alpinelinux.org/packages</li>
+<li>for wolfi images , use wolfi apks that are listed in the wolfi-os repository  hosted at packages.wolfi.dev/os</li>
+<li>Don&#39;t mix! </li>
+<li>You cam also create your own apks with melange</li>
+</ul>
+</li>
+<li><p>why distroless ?</p>
+<ul>
+<li>Minimalist container images with only what&#39;s absolutely necessary to build or execute your application</li>
+<li>Popular base images are full of software that only makes sense on bare metal</li>
+<li>No need for package managers or interactive shells on production images </li>
+<li>less dependencies = less attack surface</li>
+</ul>
+</li>
+</ul>
+<pre><code class="hljs language-bash">docker run cgr.dev/chainguard/apko version
+</code></pre>
+<pre><code class="hljs language-bash">docker run -v <span class="hljs-string">&quot;<span class="hljs-variable">$PWD</span>&quot;</span>:/work cgr.dev/chainguard/apko build examples/alpine-base.yaml apko-alpine:edge apko-alpine.tar
+</code></pre>
+<h1 id="scratch-images">Scratch Images</h1>
+<p>The default golang image is great! It allows you to quickly build and test your golang projects. But it has a few draw backs, it is a massive 964 MB even the slimmed down alpine based image is 327 MB, not only that but having unused binaries and packages opens you up to security flaws.</p>
+<p>Using a multi-stage image will allow you to build smaller images by dropping all the packages used to build the binaries and only including the ones required during runtime.</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-comment"># Create a builder stage</span>
+<span class="hljs-keyword">FROM</span> golang:alpine as builder
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk update</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk add --no-cache git ca-certificates \
+    &amp;&amp; update-ca-certificates</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . .</span>
+
+<span class="hljs-comment"># Fetch dependencies</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> go mod download</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> go mod verify</span>
+
+<span class="hljs-comment"># Build the binary</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags=<span class="hljs-string">&quot;-w -s&quot;</span> \
+    -o /go/bin/my-docker-binary</span>
+
+<span class="hljs-comment"># Create clean image</span>
+<span class="hljs-keyword">FROM</span> alpine:latest
+
+<span class="hljs-comment"># Copy only the static binary</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /go/bin/my-docker-binary \
+    /go/bin/my-docker-binary</span>
+
+<span class="hljs-comment"># Run the binary</span>
+<span class="hljs-keyword">ENTRYPOINT</span><span class="language-bash"> [<span class="hljs-string">&quot;/go/bin/my-docker-binary&quot;</span>]</span>
+</code></pre>
+<p>Great now we have an image thats 20 MB thats a 95% reduction! Remember these are production images so we use -ldflags=&quot;-w -s&quot; to turn off debug information -w and Go symbols -s.</p>
+<h2 id="scratch-image-and-lowest-privilege-user">Scratch Image and Lowest Privilege User</h2>
+<p>Now to get rid of all those unused packages. Instead of using the alpine image as our final stage we will use the scratch image which has literally nothing!</p>
+<p>Will will take this opportunity to also create a non-root user. Add the following snippet to your builder stage</p>
+<pre><code>
+ENV USER=appuser
+ENV UID=10001 
+
+RUN adduser \    
+    --disabled-password \    
+    --gecos &quot;&quot; \    
+    --home &quot;/nonexistent&quot; \    
+    --shell &quot;/sbin/nologin&quot; \    
+    --no-create-home \    
+    --uid &quot;$\{UID\}&quot; \    
+    &quot;$\{USER\}&quot;
+</code></pre>
+<p>We will need to copy over the ca-certificates to the final stage, this is only required if you are making https calls and we will also need to copy over the passwd and group files to use our appuser. Finally we need get the stage to use our user.</p>
+<pre><code># Copy over the necessary files
+COPY --from=builder \
+    /etc/ssl/certs/ca-certificates.crt \
+    /etc/ssl/certs/
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+# Use our user!
+USER appuser:appuser
+</code></pre>
+<p>So finally your Dockerfile should look something like this:</p>
+<pre><code># Create a builder stage
+FROM golang:alpine as builder
+
+RUN apk update
+RUN apk add --no-cache git ca-certificates \
+    &amp;&amp; update-ca-certificates
+
+ENV USER=appuser
+ENV UID=10001 
+
+RUN adduser \    
+    --disabled-password \    
+    --gecos &quot;&quot; \    
+    --home &quot;/nonexistent&quot; \    
+    --shell &quot;/sbin/nologin&quot; \    
+    --no-create-home \    
+    --uid &quot;${UID}&quot; \    
+    &quot;${USER}&quot;
+
+COPY . .
+
+# Fetch dependencies
+RUN go mod download
+RUN go mod verify
+
+# Build the binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -ldflags=&quot;-w -s&quot; \
+    -o /go/bin/my-docker-binary
+
+# Create clean image
+FROM scratch
+
+# Copy only the static binary
+COPY --from=builder \
+    /go/bin/my-docker-binary \
+    /go/bin/my-docker-binary
+COPY --from=builder \
+    /etc/ssl/certs/ca-certificates.crt \
+    /etc/ssl/certs/
+COPY --from=builder /etc/passwd /etc/passwd
+COPY --from=builder /etc/group /etc/group
+
+# Use our user!
+USER appuser:appuser
+
+# Run the binary
+ENTRYPOINT [&quot;/go/bin/my-docker-binary&quot;]
+</code></pre>
+</div><div class="lesson-links"><a href="/containersecurity/lessons/Container-Reconnaissance/Auditing-docker-sec" class="prev">← Previous</a><a href="/containersecurity/lessons/Defending-Containers-and-Containerized-Apps-on-Scale/dockerfile-security" class="next">Next →</a></div></div><div class="details-bg"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="154" height="154" viewBox="0 0 154 154"><defs><clipPath id="clip-path"><rect id="Rectangle_2238" data-name="Rectangle 2238" width="154" height="154" transform="translate(9467 350)" fill="#fff" stroke="#707070" stroke-width="1"></rect></clipPath><clipPath id="clip-corner-image-active"><rect width="154" height="154"></rect></clipPath></defs><g id="corner-image-active" clip-path="url(#clip-corner-image-active)"><g id="Corner-image-active-2" data-name="Corner-image-active" transform="translate(-9467 -350)" clip-path="url(#clip-path)"><path id="Subtraction_34" data-name="Subtraction 34" d="M-3857.365,1740.766h0l-7.07-7.07,12.89-12.89v14.142l-5.818,5.818Zm-14.142-14.142h0l-7.071-7.07,27.033-27.033v14.143l-19.96,19.96Zm-14.143-14.143h0l-7.07-7.069,41.175-41.175v14.142Zm-14.142-14.142h0l-7.07-7.069,55.317-55.317v14.142Zm-14.142-14.142h0l-7.07-7.069,69.459-69.459v14.142Zm-14.142-14.142h0l-7.07-7.069,76.739-76.739h6.862v7.28Zm-14.143-14.143h0l-7.07-7.069,62.6-62.6h14.142Zm-14.142-14.142h0l-7.07-7.069,48.454-48.454h14.142Zm-14.142-14.142h0l-7.07-7.069,34.312-34.312h14.142Zm-14.142-14.142h0l-7.07-7.069,20.17-20.17h14.142Zm-14.142-14.142h0l-7.071-7.071,6.027-6.027h14.144l-13.1,13.1Zm367.24-56.114v-.909l.455.455-.453.453Z" transform="translate(13472.546 -1236.766)" fill="var(--corner-fill)"></path></g></g></svg></div></div><h3 class="tweet-head">loading …</h3></div></div><footer class="footer"><ul class="socials"><li class="social"><a href="https://twitter.com/BiradarSangam"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="40" height="32" viewBox="0 0 40 32"><defs><clipPath id="clip-twitter-social"><rect width="40" height="32"></rect></clipPath></defs><g id="twitter-social" clip-path="url(#clip-twitter-social)"><g id="Group_269" data-name="Group 269" transform="translate(-230.23 -1140.849)"><path id="Path_419" data-name="Path 419" d="M266.12,1148.861v1.035a23.092,23.092,0,0,1-1.507,8.1,24.08,24.08,0,0,1-4.475,7.381,22.175,22.175,0,0,1-7.306,5.4,24.129,24.129,0,0,1-10,2.07,23.7,23.7,0,0,1-6.667-.945,22.83,22.83,0,0,1-5.936-2.655q.959.091,1.963.09a16.518,16.518,0,0,0,5.434-.9,17.111,17.111,0,0,0,4.749-2.52,8.275,8.275,0,0,1-4.749-1.643,7.8,7.8,0,0,1-2.877-3.983,8.268,8.268,0,0,0,1.507.135,8.58,8.58,0,0,0,2.146-.27,8.16,8.16,0,0,1-5.685-4.344,8.326,8.326,0,0,1-.89-3.578v-.135a7.775,7.775,0,0,0,3.744,1.035,8.183,8.183,0,0,1-2.671-2.9,7.817,7.817,0,0,1-.982-3.848,7.948,7.948,0,0,1,1.1-4.05,23.53,23.53,0,0,0,16.895,8.46,9.221,9.221,0,0,1-.183-1.845,7.787,7.787,0,0,1,1.1-4.05,8.216,8.216,0,0,1,2.991-2.948,7.991,7.991,0,0,1,4.087-1.1,8.184,8.184,0,0,1,5.982,2.566,16.087,16.087,0,0,0,5.205-1.98,7.784,7.784,0,0,1-1.393,2.588,8.4,8.4,0,0,1-2.215,1.913,16.856,16.856,0,0,0,4.749-1.305A17.032,17.032,0,0,1,266.12,1148.861Z" fill="var(--footer-icons)"></path></g></g></svg></a></li><li class="social"><a href="https://github.com/sangam14"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32"><defs><clipPath id="clip-github-social"><rect width="32" height="32"></rect></clipPath></defs><g id="github-social" clip-path="url(#clip-github-social)"><g id="Group_272" data-name="Group 272" transform="translate(13522.5 -6994)"><path id="Subtraction_33" data-name="Subtraction 33" d="M-24967.5,8041a15.9,15.9,0,0,1-11.312-4.688A15.893,15.893,0,0,1-24983.5,8025a15.893,15.893,0,0,1,4.689-11.315A15.894,15.894,0,0,1-24967.5,8009a15.894,15.894,0,0,1,11.313,4.686A15.893,15.893,0,0,1-24951.5,8025a15.893,15.893,0,0,1-4.689,11.313A15.9,15.9,0,0,1-24967.5,8041Zm-3.781-4.571h0v3.918h7.895v-6.665a1.836,1.836,0,0,0-1.2-1.718c5.1-.617,7.467-2.975,7.467-7.424a7.176,7.176,0,0,0-1.637-4.728,6.74,6.74,0,0,0,.275-1.812,4.34,4.34,0,0,0-.52-2.452.574.574,0,0,0-.359-.1c-1.061,0-3.465,1.411-3.936,1.694a16.644,16.644,0,0,0-4.2-.489,16.379,16.379,0,0,0-3.969.445c-.846-.5-2.91-1.649-3.859-1.649a.566.566,0,0,0-.354.095,4.3,4.3,0,0,0-.521,2.452,6.7,6.7,0,0,0,.244,1.718,7.346,7.346,0,0,0-1.6,4.822,7.263,7.263,0,0,0,1.533,4.985c1.193,1.359,3.115,2.165,5.871,2.464a1.826,1.826,0,0,0-1.129,1.693v.5h0l-.006,0a7.121,7.121,0,0,1-2.033.363,2.608,2.608,0,0,1-.965-.158,4.438,4.438,0,0,1-1.836-1.881,2.361,2.361,0,0,0-1.248-1.091,3.472,3.472,0,0,0-1.217-.3.584.584,0,0,0-.545.224.282.282,0,0,0,.027.367,1.875,1.875,0,0,0,.447.307,4.732,4.732,0,0,1,.561.355,10.726,10.726,0,0,1,1.682,2.755c.043.092.078.163.105.217a3.876,3.876,0,0,0,2.42,1.185,6.036,6.036,0,0,0,.607.025c.875,0,1.988-.124,2-.125Z" transform="translate(11461 -1015)" fill="var(--footer-icons)"></path><g id="Ellipse_670" data-name="Ellipse 670" transform="translate(-13522.5 6994)" fill="none" stroke="var(--icons)" stroke-width="1"><circle cx="16" cy="16" r="16" stroke="none"></circle><circle cx="16" cy="16" r="15.5" fill="none"></circle></g></g></g></svg></a></li><li class="social"><a href="https://linkedin.com/in/sanngambiradar"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32"><defs><clipPath id="clip-linkedin-social"><rect width="32" height="32"></rect></clipPath></defs><g id="linkedin-social" clip-path="url(#clip-linkedin-social)"><g id="Group_270" data-name="Group 270" transform="translate(-86.349 -633.073)"><path id="Path_375" data-name="Path 375" d="M115.789,633.073a2.324,2.324,0,0,1,1.682.676,2.194,2.194,0,0,1,.695,1.627V662.8a2.131,2.131,0,0,1-.695,1.609,2.314,2.314,0,0,1-1.646.659H88.69a2.307,2.307,0,0,1-1.646-.659,2.128,2.128,0,0,1-.695-1.609V635.376a2.19,2.19,0,0,1,.695-1.627,2.322,2.322,0,0,1,1.682-.676h27.063Zm-20.224,9.672a2.561,2.561,0,0,0,0-3.584,2.658,2.658,0,0,0-1.938-.712,2.724,2.724,0,0,0-1.957.712,2.371,2.371,0,0,0-.75,1.792,2.4,2.4,0,0,0,.731,1.792,2.605,2.605,0,0,0,1.9.713h.037A2.7,2.7,0,0,0,95.565,642.745ZM96,645.434H91.213V659.88H96Zm17.3,6.144a7.007,7.007,0,0,0-1.573-4.9,5.68,5.68,0,0,0-6.839-.769,5.663,5.663,0,0,0-1.426,1.573v-2.048H98.674q.036.841,0,7.717v6.728h4.791V651.8a3.592,3.592,0,0,1,.146-1.17,2.913,2.913,0,0,1,.878-1.206,2.429,2.429,0,0,1,1.609-.549,2.108,2.108,0,0,1,1.865.914,4.265,4.265,0,0,1,.549,2.341v7.752H113.3Z" fill="var(--footer-icons)"></path></g></g></svg></a></li><li class="social"><div class="terms"><p>Code Samples and Excercises Licensed Under Apache 2.0</p></div><a href="https://visitorbadge.io/status?path=https%3A%2F%2Fkubedaily.com%2Fcontainersecurity%2F"><img src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fkubedaily.com%2Fcontainersecurity%2F&amp;labelColor=%23f47373&amp;countColor=%23697689&amp;style=flat"/></a></li></ul><span><a href="https://github.com/sangam14/containersecurity" data-color-scheme="no-preference: light; light: light_high_contrast; dark: dark_dimmed;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star sangam14/containersecurity on GitHub">Star</a></span></footer></div><script async="" defer="" src="https://a.holt.courses/latest.js" data-hostname="web-dev-v3.holt.courses"></script><noscript><img src="https://a.holt.courses/noscript.gif?hostname=web-dev-v3.holt.courses" alt="" referrerPolicy="no-referrer-when-downgrade"/></noscript></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"post":{"attributes":{"title":"Container Image Security ","description":"Container Image Security "},"html":"\u003ch2 id=\"container-image-security\"\u003eContainer Image Security\u003c/h2\u003e\n\u003cul\u003e\n\u003cli\u003eBuilding secure container images\u003c/li\u003e\n\u003c/ul\u003e\n\u003ch2 id=\"choosing-base-images\"\u003eChoosing base images\u003c/h2\u003e\n\u003ch1 id=\"alpine\"\u003eAlpine\u003c/h1\u003e\n\u003cul\u003e\n\u003cli\u003ePros\u003cul\u003e\n\u003cli\u003every small images: the community pays a lot attention on minimizing image sizes\u003c/li\u003e\n\u003cli\u003eminimum functionality: only absolutely necessary packages contained\u003c/li\u003e\n\u003cli\u003elightweight init system: like Gentoo, Alpine uses OpenRC, a lightweight alternative to systemd\u003c/li\u003e\n\u003cli\u003emusl performance: for some cases, \u003ca href=\"https://musl.libc.org\"\u003emusl libc\u003c/a\u003e can be more performant than \u003ca href=\"https://www.gnu.org/software/libc/\"\u003eglibc\u003c/a\u003e\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003eCons \u003cul\u003e\n\u003cli\u003erather Poor Documentation \u003c/li\u003e\n\u003cli\u003eSmall team : Currently there are  \u003ca href=\"https://wiki.alpinelinux.org/wiki/Alpine_Linux:Developers\"\u003e3 developer listed \u003c/a\u003e as the alpine linux team \u003c/li\u003e\n\u003cli\u003epossible incompatibilities: musl libc may cause problems with some C-based plugins and adjustments may be necessary if you compile software yourself\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003c/ul\u003e\n\u003ch1 id=\"debian\"\u003eDebian\u003c/h1\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cp\u003ePro:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003esmall images: the size of slimmed down Debian images (such as minideb by Bitnami) is almost on par with Alpine (e.g. m\u003ca href=\"https://github.com/bitnami/minideb\"\u003eminideb\u003c/a\u003e  + Python is \u003ca href=\"https://dzone.com/articles/minideb-a-minimalist-debian-based-docker-image\"\u003ejust 7 MB larger than Alpine + Python\u003c/a\u003e)\u003c/li\u003e\n\u003cli\u003elots of packages: there\u0026#39;s hardly any software for Linux which hasn\u0026#39;t been packaged for Debian\u003c/li\u003e\n\u003cli\u003ewell tested: due to its popularity, Debian is used widely and issues are more likely to be found\u003c/li\u003e\n\u003cli\u003ecomprehensive documentation; also, the community produced a big amount of additional documentations and tutorials\u003c/li\u003e\n\u003cli\u003emore security reviews: again, due to its larger community, Debian gets more attention and its more likely that    vulnerabilities are discovered, e.g in glibc versus in musl libc (assumption). Debian also has a \u003ca href=\"https://www.debian.org/security/\"\u003esecurity audit team\u003c/a\u003e, which proactively looks for security issues.\u003c/li\u003e\n\u003cli\u003eprovenance: validating authenticity of packages is possible, e.g. with debsigs / dpkgsig\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003e\u003cp\u003eCon:\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eslightly larger attack surface: minideb consists of about 35 packages (such as bash, grep, hostname, mount …) due to apt depending on it\u003c/li\u003e\n\u003cli\u003emore false positives: scanners may report more false positives you need to look at\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003c/ul\u003e\n\u003ch1 id=\"distroless-images\"\u003eDistroless images\u003c/h1\u003e\n\u003cp\u003esimple distroless Golang Example \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-go\"\u003e\u003cspan class=\"hljs-keyword\"\u003epackage\u003c/span\u003e main\n\n\u003cspan class=\"hljs-keyword\"\u003eimport\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e\u0026quot;fmt\u0026quot;\u003c/span\u003e\n\n\u003cspan class=\"hljs-function\"\u003e\u003cspan class=\"hljs-keyword\"\u003efunc\u003c/span\u003e \u003cspan class=\"hljs-title\"\u003emain\u003c/span\u003e\u003cspan class=\"hljs-params\"\u003e()\u003c/span\u003e\u003c/span\u003e {\n    fmt.Println(\u003cspan class=\"hljs-string\"\u003e\u0026quot;Hello, world!\u0026quot;\u003c/span\u003e)\n}\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-Dockerfile\"\u003e\u003cspan class=\"hljs-keyword\"\u003eFROM\u003c/span\u003e golang:\u003cspan class=\"hljs-number\"\u003e1.18\u003c/span\u003e as build\n\u003cspan class=\"hljs-keyword\"\u003eWORKDIR\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e /go/src/app\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eCOPY\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e . .\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e go mod download\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e go vet -v\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e go \u003cspan class=\"hljs-built_in\"\u003etest\u003c/span\u003e -v\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e CGO_ENABLED=0 go build -o /go/bin/app\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eFROM\u003c/span\u003e gcr.io/distroless/static-debian11\n\u003cspan class=\"hljs-keyword\"\u003eCOPY\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e --from=build /go/bin/app /\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eCMD\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e [\u003cspan class=\"hljs-string\"\u003e\u0026quot;/app\u0026quot;\u003c/span\u003e]\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cp\u003eDistroless 2.0 project - uses Alpine as a minimalistic \u0026amp; secure base image, and with the help of two tools, apko and melange, allows to build an application-tailored image containing only (mostly?) the necessary bits. \u003c/p\u003e\n\u003c/li\u003e\n\u003cli\u003e\u003cp\u003eWhat is apko ?\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eDeclarative OCI image builder tool based on apk \u003c/li\u003e\n\u003cli\u003eImages are defined in YAML files  \u003c/li\u003e\n\u003cli\u003eBuild are fully reproducible \u003c/li\u003e\n\u003cli\u003eAutomatically generates SBOMs for every imahes \u003c/li\u003e\n\u003cli\u003ePlatform-agnostic buids via Docker + apko images\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003e\u003cp\u003eexample of apko.yaml file\u003c/p\u003e\n\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-yaml\"\u003e\u003cspan class=\"hljs-attr\"\u003econtents:\u003c/span\u003e\n  \u003cspan class=\"hljs-attr\"\u003erepositories:\u003c/span\u003e\n    \u003cspan class=\"hljs-bullet\"\u003e-\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003ehttps://dl-cdn.alpinelinux.org/alpine/edge/main\u003c/span\u003e\n  \u003cspan class=\"hljs-attr\"\u003epackages:\u003c/span\u003e\n    \u003cspan class=\"hljs-bullet\"\u003e-\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003ealpine-base\u003c/span\u003e\n\u003cspan class=\"hljs-attr\"\u003eentrypoint:\u003c/span\u003e\n  \u003cspan class=\"hljs-attr\"\u003ecommand:\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e/bin/sh\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e-l\u003c/span\u003e\n\u003cspan class=\"hljs-comment\"\u003e# optional environment configuration\u003c/span\u003e\n\u003cspan class=\"hljs-attr\"\u003eenvironment:\u003c/span\u003e\n  \u003cspan class=\"hljs-attr\"\u003ePATH:\u003c/span\u003e \u003cspan class=\"hljs-string\"\u003e/usr/sbin:/sbin:/usr/bin:/bin\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eBuiding the images with apko via Docker \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker run -v \u003cspan class=\"hljs-string\"\u003e\u0026quot;\u003cspan class=\"hljs-variable\"\u003e$PWD\u003c/span\u003e\u0026quot;\u003c/span\u003e:/work cgr.dev/chainguard/apko build examples/alpine-base.yaml apko-alpine:edge apko-alpine.tar\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003etest the image with docker \u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003e$ docker load \u0026lt; alpine.tar\n$ docker run -it apko-alpine:\u003cspan class=\"hljs-built_in\"\u003etest\u003c/span\u003e \n\u003c/code\u003e\u003c/pre\u003e\n\u003cul\u003e\n\u003cli\u003e\u003cp\u003eWhy apko ?\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eIntroduced by alphine , it used a different methodology to handle package management \u003c/li\u003e\n\u003cli\u003ePackage Installation or removal is done as a side effect of modifyinh the system state \u003c/li\u003e\n\u003cli\u003eThis creates the ideal conditions for reproducible and declaratve pipelines\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003e\u003cp\u003ewhere do package come from ?\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003efor alphine-base images , use Alphine apks found at pkgs.alpinelinux.org/packages\u003c/li\u003e\n\u003cli\u003efor wolfi images , use wolfi apks that are listed in the wolfi-os repository  hosted at packages.wolfi.dev/os\u003c/li\u003e\n\u003cli\u003eDon\u0026#39;t mix! \u003c/li\u003e\n\u003cli\u003eYou cam also create your own apks with melange\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003cli\u003e\u003cp\u003ewhy distroless ?\u003c/p\u003e\n\u003cul\u003e\n\u003cli\u003eMinimalist container images with only what\u0026#39;s absolutely necessary to build or execute your application\u003c/li\u003e\n\u003cli\u003ePopular base images are full of software that only makes sense on bare metal\u003c/li\u003e\n\u003cli\u003eNo need for package managers or interactive shells on production images \u003c/li\u003e\n\u003cli\u003eless dependencies = less attack surface\u003c/li\u003e\n\u003c/ul\u003e\n\u003c/li\u003e\n\u003c/ul\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker run cgr.dev/chainguard/apko version\n\u003c/code\u003e\u003c/pre\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-bash\"\u003edocker run -v \u003cspan class=\"hljs-string\"\u003e\u0026quot;\u003cspan class=\"hljs-variable\"\u003e$PWD\u003c/span\u003e\u0026quot;\u003c/span\u003e:/work cgr.dev/chainguard/apko build examples/alpine-base.yaml apko-alpine:edge apko-alpine.tar\n\u003c/code\u003e\u003c/pre\u003e\n\u003ch1 id=\"scratch-images\"\u003eScratch Images\u003c/h1\u003e\n\u003cp\u003eThe default golang image is great! It allows you to quickly build and test your golang projects. But it has a few draw backs, it is a massive 964 MB even the slimmed down alpine based image is 327 MB, not only that but having unused binaries and packages opens you up to security flaws.\u003c/p\u003e\n\u003cp\u003eUsing a multi-stage image will allow you to build smaller images by dropping all the packages used to build the binaries and only including the ones required during runtime.\u003c/p\u003e\n\u003cpre\u003e\u003ccode class=\"hljs language-dockerfile\"\u003e\u003cspan class=\"hljs-comment\"\u003e# Create a builder stage\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eFROM\u003c/span\u003e golang:alpine as builder\n\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e apk update\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e apk add --no-cache git ca-certificates \\\n    \u0026amp;\u0026amp; update-ca-certificates\u003c/span\u003e\n\n\u003cspan class=\"hljs-keyword\"\u003eCOPY\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e . .\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# Fetch dependencies\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e go mod download\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e go mod verify\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# Build the binary\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eRUN\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \\\n    go build -ldflags=\u003cspan class=\"hljs-string\"\u003e\u0026quot;-w -s\u0026quot;\u003c/span\u003e \\\n    -o /go/bin/my-docker-binary\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# Create clean image\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eFROM\u003c/span\u003e alpine:latest\n\n\u003cspan class=\"hljs-comment\"\u003e# Copy only the static binary\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eCOPY\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e --from=builder /go/bin/my-docker-binary \\\n    /go/bin/my-docker-binary\u003c/span\u003e\n\n\u003cspan class=\"hljs-comment\"\u003e# Run the binary\u003c/span\u003e\n\u003cspan class=\"hljs-keyword\"\u003eENTRYPOINT\u003c/span\u003e\u003cspan class=\"language-bash\"\u003e [\u003cspan class=\"hljs-string\"\u003e\u0026quot;/go/bin/my-docker-binary\u0026quot;\u003c/span\u003e]\u003c/span\u003e\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eGreat now we have an image thats 20 MB thats a 95% reduction! Remember these are production images so we use -ldflags=\u0026quot;-w -s\u0026quot; to turn off debug information -w and Go symbols -s.\u003c/p\u003e\n\u003ch2 id=\"scratch-image-and-lowest-privilege-user\"\u003eScratch Image and Lowest Privilege User\u003c/h2\u003e\n\u003cp\u003eNow to get rid of all those unused packages. Instead of using the alpine image as our final stage we will use the scratch image which has literally nothing!\u003c/p\u003e\n\u003cp\u003eWill will take this opportunity to also create a non-root user. Add the following snippet to your builder stage\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e\nENV USER=appuser\nENV UID=10001 \n\nRUN adduser \\    \n    --disabled-password \\    \n    --gecos \u0026quot;\u0026quot; \\    \n    --home \u0026quot;/nonexistent\u0026quot; \\    \n    --shell \u0026quot;/sbin/nologin\u0026quot; \\    \n    --no-create-home \\    \n    --uid \u0026quot;$\\{UID\\}\u0026quot; \\    \n    \u0026quot;$\\{USER\\}\u0026quot;\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eWe will need to copy over the ca-certificates to the final stage, this is only required if you are making https calls and we will also need to copy over the passwd and group files to use our appuser. Finally we need get the stage to use our user.\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e# Copy over the necessary files\nCOPY --from=builder \\\n    /etc/ssl/certs/ca-certificates.crt \\\n    /etc/ssl/certs/\nCOPY --from=builder /etc/passwd /etc/passwd\nCOPY --from=builder /etc/group /etc/group\n# Use our user!\nUSER appuser:appuser\n\u003c/code\u003e\u003c/pre\u003e\n\u003cp\u003eSo finally your Dockerfile should look something like this:\u003c/p\u003e\n\u003cpre\u003e\u003ccode\u003e# Create a builder stage\nFROM golang:alpine as builder\n\nRUN apk update\nRUN apk add --no-cache git ca-certificates \\\n    \u0026amp;\u0026amp; update-ca-certificates\n\nENV USER=appuser\nENV UID=10001 \n\nRUN adduser \\    \n    --disabled-password \\    \n    --gecos \u0026quot;\u0026quot; \\    \n    --home \u0026quot;/nonexistent\u0026quot; \\    \n    --shell \u0026quot;/sbin/nologin\u0026quot; \\    \n    --no-create-home \\    \n    --uid \u0026quot;${UID}\u0026quot; \\    \n    \u0026quot;${USER}\u0026quot;\n\nCOPY . .\n\n# Fetch dependencies\nRUN go mod download\nRUN go mod verify\n\n# Build the binary\nRUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \\\n    go build -ldflags=\u0026quot;-w -s\u0026quot; \\\n    -o /go/bin/my-docker-binary\n\n# Create clean image\nFROM scratch\n\n# Copy only the static binary\nCOPY --from=builder \\\n    /go/bin/my-docker-binary \\\n    /go/bin/my-docker-binary\nCOPY --from=builder \\\n    /etc/ssl/certs/ca-certificates.crt \\\n    /etc/ssl/certs/\nCOPY --from=builder /etc/passwd /etc/passwd\nCOPY --from=builder /etc/group /etc/group\n\n# Use our user!\nUSER appuser:appuser\n\n# Run the binary\nENTRYPOINT [\u0026quot;/go/bin/my-docker-binary\u0026quot;]\n\u003c/code\u003e\u003c/pre\u003e\n","slug":"Container-image-security","title":"Container Image Security ","section":"Defending Containers and Containerized Apps on Scale","icon":"book","filePath":"/home/runner/work/containersecurity/containersecurity/lessons/03-Defending-Containers-and-Containerized-Apps-on-Scale/A-Container-image-security.md","nextSlug":"/containersecurity/lessons/Defending-Containers-and-Containerized-Apps-on-Scale/dockerfile-security","prevSlug":"/containersecurity/lessons/Container-Reconnaissance/Auditing-docker-sec"}},"__N_SSG":true},"page":"/lessons/[section]/[slug]","query":{"section":"Defending-Containers-and-Containerized-Apps-on-Scale","slug":"Container-image-security"},"buildId":"UBfITahn1ykxbPLW13lbA","assetPrefix":"/containersecurity","isFallback":false,"gsp":true,"scriptLoader":[]}</script></body></html>
